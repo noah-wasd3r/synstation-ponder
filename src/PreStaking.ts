@@ -34,7 +34,7 @@ ponder.on('PreStaking:Deposit', async ({ event, context }) => {
 
   // updateUser
 
-  const { User, UserPreStaking } = context.db;
+  const { User, UserPreStaking, PreStaking } = context.db;
 
   const { prevPointPerSecond, lastTimestamp: prevLastTimestamp } = await UserPreStaking.findUnique({
     id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
@@ -80,6 +80,16 @@ ponder.on('PreStaking:Deposit', async ({ event, context }) => {
       totalAccumulatedPoints: current.totalAccumulatedPoints + accumulatedPoints,
       totalPointPerSecond: current.totalPointPerSecond + userPreStaking.pointPerSecond - prevPointPerSecond,
     }),
+  });
+
+  await PreStaking.create({
+    id: event.transaction.hash.toString().concat('-').concat(event.args.to.toString()),
+    data: {
+      userId: event.args.to.toString(),
+      token: event.args.token.toString().concat('-').concat(context.network.name),
+      amount: event.args.amount,
+      timestamp: event.block.timestamp,
+    },
   });
 });
 
