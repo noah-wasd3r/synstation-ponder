@@ -83,9 +83,18 @@ ponder.on('Staking:Unstaked', async ({ event, context }) => {
   const prevLastTimestamp = prevUserStaking?.lastTimestamp || event.block.timestamp;
 
   const accumulatedPoints = prevPointPerSecond * BigInt(event.block.timestamp - prevLastTimestamp);
-  const userStaking = await UserStaking.update({
+  const userStaking = await UserStaking.upsert({
     id: event.args.user.toString().concat('-').concat(event.args.wrappedToken.toString()).concat('-').concat(context.network.name),
-    data: ({ current }) => ({
+    create: {
+      userId: event.args.user.toString(),
+      lastTimestamp: event.block.timestamp,
+      token: event.args.token.toString(),
+      wrappedToken: event.args.wrappedToken.toString(),
+      wrappedAmount: BigInt(0),
+      accumulatedPoints: BigInt(0),
+      pointPerSecond: BigInt(0),
+    },
+    update: ({ current }) => ({
       lastTimestamp: event.block.timestamp,
       wrappedAmount: current.wrappedAmount - event.args.wrappedAmount,
       accumulatedPoints: current.accumulatedPoints + current.pointPerSecond * BigInt(event.block.timestamp - current.lastTimestamp),
