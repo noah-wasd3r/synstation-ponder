@@ -20,7 +20,8 @@ export function getPointPerSecond(token: string, network: string, amount: bigint
     switch (token.toLowerCase()) {
       case '0xAeaaf0e2c81Af264101B9129C00F4440cCF0F720'.toLowerCase(): // WASTR
         return (BigInt(10) * (BigInt(0.05 * 10 ** 8) * amount)) / BigInt(86400);
-
+      case '0xE511ED88575C57767BAfb72BfD10775413E3F2b0'.toLowerCase(): // nASTR
+        return (BigInt(10) * (BigInt(0.05 * 10 ** 8) * amount)) / BigInt(86400);
       default:
         return BigInt(10) * BigInt(0);
     }
