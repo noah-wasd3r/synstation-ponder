@@ -3,6 +3,8 @@ import { ponder } from '@/generated';
 export function getPointPerSecond(token: string, network: string, amount: bigint): bigint {
   if (network === 'mainnet') {
     switch (token.toLowerCase()) {
+      case '0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee': // weETH
+        return (BigInt(10) * (BigInt(3100 * 10 ** 8) * amount)) / BigInt(86400);
       case '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0': // wstETH
         return (BigInt(10) * (BigInt(3100 * 10 ** 8) * amount)) / BigInt(86400);
       case '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'.toLowerCase(): // USDC
