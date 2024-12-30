@@ -1,54 +1,89 @@
-import { createSchema } from '@ponder/core';
+import { onchainTable, relations } from 'ponder';
 
-export default createSchema((p) => ({
-  Example: p.createTable({
-    id: p.string(),
-    name: p.string().optional(),
-  }),
-  User: p.createTable({
-    id: p.string(),
-    creationTimestamp: p.bigint(),
-    lastTimestamp: p.bigint(),
-    totalAccumulatedPoints: p.bigint(),
-    totalPointPerSecond: p.bigint(),
-  }),
-  UserStaking: p.createTable({
-    id: p.string(),
-    userId: p.string().references('User.id'),
-    lastTimestamp: p.bigint(),
-    token: p.string(),
-    wrappedToken: p.string(),
-    wrappedAmount: p.bigint(),
-    accumulatedPoints: p.bigint(),
+export const account = onchainTable('account', (t) => ({
+  address: t.hex().primaryKey(),
+  balance: t.bigint().notNull(),
+}));
 
-    pointPerSecond: p.bigint(),
-  }),
-  Staking: p.createTable({
-    id: p.string(), // hash
-    userId: p.string().references('User.id'),
-    token: p.string(),
-    amount: p.bigint(),
-    wrappedToken: p.string(),
-    wrappedAmount: p.bigint(),
-    timestamp: p.bigint(),
-    userStaging: p.string().references('UserStaking.id'),
-  }),
+export const Users = onchainTable('user', (t) => ({
+  id: t.text().primaryKey(),
+  creationTimestamp: t.bigint(),
+  lastTimestamp: t.bigint(),
+  totalAccumulatedPoints: t.bigint().notNull(),
+  totalPointPerSecond: t.bigint().notNull(),
+}));
 
-  UserPreStaking: p.createTable({
-    id: p.string(),
-    userId: p.string().references('User.id'),
-    lastTimestamp: p.bigint(),
-    token: p.string(),
-    amount: p.bigint(),
+export const UserStaking = onchainTable('user_staking', (t) => ({
+  id: t.text().primaryKey(),
+  userId: t.text(),
+  lastTimestamp: t.bigint().notNull(),
+  token: t.text().notNull(),
+  wrappedToken: t.text().notNull(),
+  wrappedAmount: t.bigint().notNull(),
+  accumulatedPoints: t.bigint().notNull(),
 
-    accumulatedPoints: p.bigint(),
-    pointPerSecond: p.bigint(),
-  }),
-  PreStaking: p.createTable({
-    id: p.string(), // hash
-    userId: p.string().references('User.id'),
-    token: p.string(),
-    amount: p.bigint(),
-    timestamp: p.bigint(),
+  pointPerSecond: t.bigint().notNull(),
+}));
+
+export const Staking = onchainTable('staking', (t) => ({
+  id: t.text().primaryKey(),
+  userId: t.text(),
+  token: t.text(),
+  amount: t.bigint(),
+  wrappedToken: t.text(),
+  wrappedAmount: t.bigint(),
+  timestamp: t.bigint(),
+  userStaging: t.text(),
+}));
+
+export const UserPreStaking = onchainTable('user_pre_staking', (t) => ({
+  id: t.text().primaryKey(),
+  userId: t.text(),
+  lastTimestamp: t.bigint().notNull(),
+  token: t.text().notNull(),
+  amount: t.bigint().notNull(),
+
+  accumulatedPoints: t.bigint().notNull(),
+  pointPerSecond: t.bigint().notNull(),
+}));
+
+export const PreStaking = onchainTable('pre_staking', (t) => ({
+  id: t.text().primaryKey(),
+  userId: t.text(),
+  token: t.text(),
+  amount: t.bigint(),
+  timestamp: t.bigint(),
+}));
+
+export const Market = onchainTable('market', (t) => ({
+  id: t.text().primaryKey(),
+  marketIndex: t.bigint().notNull(),
+  title: t.text().notNull(),
+
+  resolver: t.text(),
+  collateralToken: t.text(),
+
+  isResolved: t.boolean().default(false),
+
+  //
+
+  createdAt: t.bigint(),
+}));
+
+export const MarketRelation = relations(Market, ({ many }) => ({
+  conditions: many(Condition),
+}));
+
+export const Condition = onchainTable('condition', (t) => ({
+  address: t.hex().primaryKey(),
+  marketIndex: t.bigint().notNull(),
+  symbol: t.text().notNull(),
+  name: t.text().notNull(),
+}));
+
+export const ConditionRelation = relations(Condition, ({ one }) => ({
+  market: one(Market, {
+    fields: [Condition.marketIndex],
+    references: [Market.marketIndex],
   }),
 }));

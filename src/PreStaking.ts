@@ -1,4 +1,5 @@
-import { ponder } from '@/generated';
+import { ponder } from 'ponder:registry';
+import { PreStaking, UserPreStaking, Users } from '../ponder.schema';
 
 export function getPointPerSecond(token: string, network: string, amount: bigint): bigint {
   if (network === 'mainnet') {
@@ -39,62 +40,78 @@ ponder.on('PreStaking:Deposit', async ({ event, context }) => {
 
   // updateUser
 
-  const { User, UserPreStaking, PreStaking } = context.db;
-
-  const { prevPointPerSecond, lastTimestamp: prevLastTimestamp } = await UserPreStaking.findUnique({
-    id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
-  }).then((res) =>
-    res
-      ? { prevPointPerSecond: res.pointPerSecond, lastTimestamp: res.lastTimestamp }
-      : {
-          prevPointPerSecond: BigInt(0),
-          lastTimestamp: event.block.timestamp,
-        }
-  );
+  const { prevPointPerSecond, lastTimestamp: prevLastTimestamp } = await context.db
+    .find(UserPreStaking, {
+      id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
+    })
+    .then((res) =>
+      res
+        ? { prevPointPerSecond: res.pointPerSecond, lastTimestamp: res.lastTimestamp }
+        : {
+            prevPointPerSecond: BigInt(0),
+            lastTimestamp: event.block.timestamp,
+          }
+    );
 
   const accumulatedPoints = prevPointPerSecond * BigInt(event.block.timestamp - prevLastTimestamp);
 
-  const userPreStaking = await UserPreStaking.upsert({
-    id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
-    create: {
+  // const userPreStaking = await UserPreStaking.upsert({
+  //   id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
+  //   create: {
+  //     userId: event.args.to.toString(),
+  //     lastTimestamp: event.block.timestamp,
+  //     token: event.args.token.toString(),
+  //     amount: event.args.amount,
+  //     accumulatedPoints: BigInt(0),
+  //     pointPerSecond: getPointPerSecond(event.args.token.toString(), context.network.name, event.args.amount),
+  //   },
+  //   update: ({ current }) => ({
+  //     lastTimestamp: event.block.timestamp,
+  //     amount: current.amount + event.args.amount,
+  //     accumulatedPoints: current.accumulatedPoints + current.pointPerSecond * BigInt(event.block.timestamp - current.lastTimestamp),
+  //     pointPerSecond: getPointPerSecond(event.args.token.toString(), context.network.name, current.amount + event.args.amount),
+  //   }),
+  // });
+
+  const userPreStaking = await context.db
+    .insert(UserPreStaking)
+    .values({
+      id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
       userId: event.args.to.toString(),
       lastTimestamp: event.block.timestamp,
       token: event.args.token.toString(),
       amount: event.args.amount,
       accumulatedPoints: BigInt(0),
       pointPerSecond: getPointPerSecond(event.args.token.toString(), context.network.name, event.args.amount),
-    },
-    update: ({ current }) => ({
+    })
+    .onConflictDoUpdate((current) => ({
       lastTimestamp: event.block.timestamp,
       amount: current.amount + event.args.amount,
       accumulatedPoints: current.accumulatedPoints + current.pointPerSecond * BigInt(event.block.timestamp - current.lastTimestamp),
       pointPerSecond: getPointPerSecond(event.args.token.toString(), context.network.name, current.amount + event.args.amount),
-    }),
-  });
+    }));
 
-  const user = await User.upsert({
-    id: event.args.to.toString(),
-    create: {
+  const user = await context.db
+    .insert(Users)
+    .values({
+      id: event.args.to.toString(),
       creationTimestamp: event.block.timestamp,
       lastTimestamp: event.block.timestamp,
       totalAccumulatedPoints: BigInt(0),
       totalPointPerSecond: getPointPerSecond(event.args.token.toString(), context.network.name, event.args.amount),
-    },
-    update: ({ current }) => ({
+    })
+    .onConflictDoUpdate((current) => ({
       lastTimestamp: event.block.timestamp,
       totalAccumulatedPoints: current.totalAccumulatedPoints + accumulatedPoints,
       totalPointPerSecond: current.totalPointPerSecond + userPreStaking.pointPerSecond - prevPointPerSecond,
-    }),
-  });
+    }));
 
-  await PreStaking.create({
+  await context.db.insert(PreStaking).values({
     id: event.transaction.hash.toString().concat('-').concat(event.args.to.toString()),
-    data: {
-      userId: event.args.to.toString(),
-      token: event.args.token.toString().concat('-').concat(context.network.name),
-      amount: event.args.amount,
-      timestamp: event.block.timestamp,
-    },
+    userId: event.args.to.toString(),
+    token: event.args.token.toString().concat('-').concat(context.network.name),
+    amount: event.args.amount,
+    timestamp: event.block.timestamp,
   });
 });
 
@@ -103,39 +120,49 @@ ponder.on('PreStaking:Withdraw', async ({ event, context }) => {
 
   // updateUser
 
-  const { User, UserPreStaking } = context.db;
-
-  const { prevPointPerSecond, lastTimestamp: prevLastTimestamp } = await UserPreStaking.findUnique({
-    id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
-  }).then((res) =>
-    res
-      ? { prevPointPerSecond: res.pointPerSecond, lastTimestamp: res.lastTimestamp }
-      : {
-          prevPointPerSecond: BigInt(0),
-          lastTimestamp: event.block.timestamp,
-        }
-  );
+  const { prevPointPerSecond, lastTimestamp: prevLastTimestamp } = await context.db
+    .find(UserPreStaking, {
+      id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
+    })
+    .then((res) =>
+      res
+        ? { prevPointPerSecond: res.pointPerSecond, lastTimestamp: res.lastTimestamp }
+        : {
+            prevPointPerSecond: BigInt(0),
+            lastTimestamp: event.block.timestamp,
+          }
+    );
 
   const accumulatedPoints = prevPointPerSecond * BigInt(event.block.timestamp - prevLastTimestamp);
 
-  const userPreStaking = await UserPreStaking.update({
-    id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
-
-    data: ({ current }) => ({
+  const userPreStaking = await context.db
+    .update(UserPreStaking, {
+      id: event.args.to.toString().concat('-').concat(event.args.token.toString()).concat('-').concat(context.network.name),
+    })
+    .set((current) => ({
       lastTimestamp: event.block.timestamp,
       amount: current.amount - event.args.amount,
       accumulatedPoints: current.accumulatedPoints + current.pointPerSecond * BigInt(event.block.timestamp - current.lastTimestamp),
       pointPerSecond: getPointPerSecond(event.args.token.toString(), context.network.name, current.amount - event.args.amount),
-    }),
-  });
+    }));
 
-  const user = await User.update({
-    id: event.args.to.toString(),
-
-    data: ({ current }) => ({
+  const user = await context.db
+    .update(Users, {
+      id: event.args.to.toString(),
+    })
+    .set((current) => ({
       lastTimestamp: event.block.timestamp,
       totalAccumulatedPoints: current.totalAccumulatedPoints + accumulatedPoints,
       totalPointPerSecond: current.totalPointPerSecond + userPreStaking.pointPerSecond - prevPointPerSecond,
-    }),
-  });
+    }));
+
+  // const user = await User.update({
+  //   id: event.args.to.toString(),
+
+  //   data: ({ current }) => ({
+  //     lastTimestamp: event.block.timestamp,
+  //     totalAccumulatedPoints: current.totalAccumulatedPoints + accumulatedPoints,
+  //     totalPointPerSecond: current.totalPointPerSecond + userPreStaking.pointPerSecond - prevPointPerSecond,
+  //   }),
+  // });
 });

@@ -1,25 +1,36 @@
-import { createConfig } from '@ponder/core';
-import { http } from 'viem';
+import { createConfig, loadBalance } from 'ponder';
+import { http, createPublicClient } from 'viem';
 
+import { weth9Abi } from './abis/weth9Abi';
 import { PreStakingAbi } from './abis/PreStakingAbi';
 import { StakingAbi } from './abis/StakingAbi';
+import { OutcomeFactoryAbi } from './abis/OutcomeFactoryAbi';
 
 export default createConfig({
   networks: {
-    mainnet: { chainId: 1, transport: http(process.env.PONDER_RPC_URL_1) },
+    mainnet: {
+      chainId: 1,
+      transport: loadBalance([
+        http('https://eth.llamarpc.com'),
+        http('https://singapore.rpc.blxrbdn.com'),
+        http('https://api.securerpc.com/v1'),
+        http('https://gateway.tenderly.co/public/mainnet'),
+      ]),
+    },
     astar: { chainId: 592, transport: http(process.env.PONDER_RPC_URL_592) },
+    minato: { chainId: 1946, transport: http(process.env.PONDER_RPC_URL_1946) },
   },
   contracts: {
     PreStaking: {
       abi: PreStakingAbi,
       network: {
-        mainnet: {
-          address: '0x3BaC111A6F5ED6A554616373d5c7D858d7c10d88',
-          startBlock: 20975761,
-        },
         astar: {
           address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
           startBlock: 7291207,
+        },
+        mainnet: {
+          address: '0x3BaC111A6F5ED6A554616373d5c7D858d7c10d88',
+          startBlock: 20975761,
         },
       },
     },
@@ -31,6 +42,17 @@ export default createConfig({
         },
       },
       abi: StakingAbi,
+    },
+
+    OutcomeFactory: {
+      abi: OutcomeFactoryAbi,
+      includeCallTraces: true,
+      network: {
+        minato: {
+          address: '0xE97A28a44e13A4BD74b64d5aB31423bb840E9986',
+          startBlock: 5656586,
+        },
+      },
     },
   },
 });
