@@ -1,127 +1,6 @@
-export const OutcomeFactoryAbi = [
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: 'address',
-        name: 'previousAdmin',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        internalType: 'address',
-        name: 'newAdmin',
-        type: 'address',
-      },
-    ],
-    name: 'AdminChanged',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'beacon',
-        type: 'address',
-      },
-    ],
-    name: 'BeaconUpgraded',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'implementation',
-        type: 'address',
-      },
-    ],
-    name: 'Upgraded',
-    type: 'event',
-  },
-  {
-    stateMutability: 'payable',
-    type: 'fallback',
-  },
-  {
-    inputs: [],
-    name: 'admin',
-    outputs: [
-      {
-        internalType: 'address',
-        name: 'admin_',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'newAdmin',
-        type: 'address',
-      },
-    ],
-    name: 'changeAdmin',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'implementation',
-    outputs: [
-      {
-        internalType: 'address',
-        name: 'implementation_',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'newImplementation',
-        type: 'address',
-      },
-    ],
-    name: 'upgradeTo',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'newImplementation',
-        type: 'address',
-      },
-      {
-        internalType: 'bytes',
-        name: 'data',
-        type: 'bytes',
-      },
-    ],
-    name: 'upgradeToAndCall',
-    outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
-  },
-  {
-    stateMutability: 'payable',
-    type: 'receive',
-  },
+import { AbiItem } from 'viem';
+
+export const OutcomeFactoryImplAbi = [
   {
     anonymous: false,
     inputs: [
@@ -133,9 +12,9 @@ export const OutcomeFactoryAbi = [
       },
       {
         indexed: false,
-        internalType: 'address',
-        name: 'condition',
-        type: 'address',
+        internalType: 'address[]',
+        name: 'conditions',
+        type: 'address[]',
       },
       {
         indexed: false,
@@ -316,6 +195,19 @@ export const OutcomeFactoryAbi = [
     ],
     name: 'PermissionsUpdated',
     type: 'event',
+  },
+  {
+    inputs: [],
+    name: 'admin',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
     inputs: [

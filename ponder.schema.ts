@@ -57,17 +57,18 @@ export const PreStaking = onchainTable('pre_staking', (t) => ({
 
 export const Market = onchainTable('market', (t) => ({
   id: t.text().primaryKey(),
-  marketIndex: t.bigint().notNull(),
+  marketIndex: t.text().notNull(),
   title: t.text().notNull(),
 
-  resolver: t.text(),
-  collateralToken: t.text(),
+  resolver: t.text().notNull(),
+  collateralToken: t.text().notNull(),
 
   isResolved: t.boolean().default(false),
 
   //
 
-  createdAt: t.bigint(),
+  createdAt: t.bigint().notNull(),
+  resolvedAt: t.bigint(),
 }));
 
 export const MarketRelation = relations(Market, ({ many }) => ({
@@ -76,7 +77,7 @@ export const MarketRelation = relations(Market, ({ many }) => ({
 
 export const Condition = onchainTable('condition', (t) => ({
   address: t.hex().primaryKey(),
-  marketIndex: t.bigint().notNull(),
+  marketIndex: t.text().notNull(),
   symbol: t.text().notNull(),
   name: t.text().notNull(),
 }));
@@ -87,3 +88,37 @@ export const ConditionRelation = relations(Condition, ({ one }) => ({
     references: [Market.marketIndex],
   }),
 }));
+
+export const ConditionRedeemEvent = onchainTable('condition_redeem_event', (t) => ({
+  id: t.text().primaryKey(), // userAddress-condition
+  marketIndex: t.text().notNull(),
+  conditionAddress: t.hex().notNull(),
+  userAddress: t.hex().notNull(),
+  conditionAmount: t.bigint().notNull(),
+  collateralAmount: t.bigint().notNull(),
+  timestamp: t.bigint().notNull(),
+}));
+
+export const ConditionMintedEvent = onchainTable('condition_minted_event', (t) => ({
+  id: t.text().primaryKey(), // userAddress-condition
+  marketIndex: t.text().notNull(),
+  conditionAddress: t.hex().notNull(),
+  userAddress: t.hex().notNull(),
+  conditionAmount: t.bigint().notNull(),
+  collateralAmount: t.bigint().notNull(),
+  timestamp: t.bigint().notNull(),
+}));
+
+// TODO: userConditionPosiion(with Swapped
+
+export const swapEvent = onchainTable('swap_event', (t) => ({
+  id: t.text().primaryKey(), // txHash-chainId
+  fromToken: t.hex().notNull(),
+  toToken: t.hex().notNull(),
+  fromAmount: t.bigint().notNull(),
+  toAmount: t.bigint().notNull(),
+  recipient: t.hex().notNull(),
+  timestamp: t.bigint().notNull(),
+}));
+
+// export const userCondition;

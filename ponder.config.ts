@@ -1,11 +1,12 @@
-import { createConfig, loadBalance } from 'ponder';
+import { createConfig, loadBalance, mergeAbis } from 'ponder';
 import { http, createPublicClient } from 'viem';
 
 import { weth9Abi } from './abis/weth9Abi';
 import { PreStakingAbi } from './abis/PreStakingAbi';
 import { StakingAbi } from './abis/StakingAbi';
-import { OutcomeFactoryAbi } from './abis/OutcomeFactoryAbi';
-
+import { OutcomeFactoryImplAbi } from './abis/OutcomeFactoryImplAbi';
+import { OutcomeFactoryProxyAbi } from './abis/OutcomeFactoryProxyAbi';
+import { OutcomeRouterAbi } from './abis/OutcomeRouterAbi';
 export default createConfig({
   networks: {
     mainnet: {
@@ -18,7 +19,10 @@ export default createConfig({
       ]),
     },
     astar: { chainId: 592, transport: http(process.env.PONDER_RPC_URL_592) },
-    minato: { chainId: 1946, transport: http(process.env.PONDER_RPC_URL_1946) },
+    minato: {
+      chainId: 1946,
+      transport: http(process.env.PONDER_RPC_URL_1946),
+    },
   },
   contracts: {
     PreStaking: {
@@ -45,12 +49,21 @@ export default createConfig({
     },
 
     OutcomeFactory: {
-      abi: OutcomeFactoryAbi,
-      includeCallTraces: true,
+      abi: mergeAbis([OutcomeFactoryImplAbi, OutcomeFactoryProxyAbi]),
+      // includeCallTraces: true,
       network: {
         minato: {
           address: '0xE97A28a44e13A4BD74b64d5aB31423bb840E9986',
-          startBlock: 5656586,
+          startBlock: 5437872,
+        },
+      },
+    },
+    OutcomeRouter: {
+      abi: OutcomeRouterAbi,
+      network: {
+        minato: {
+          address: '0x92224F3D739Ea6f25920693531E09BA97b54E2d2',
+          startBlock: 5645792,
         },
       },
     },
