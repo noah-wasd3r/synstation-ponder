@@ -1,5 +1,5 @@
 import { ponder } from 'ponder:registry';
-import { Condition, ConditionRedeemEvent, Market, swapEvent } from '../ponder.schema';
+import { Condition, Market, swapEvent } from '../ponder.schema';
 import { erc20Abi } from 'viem';
 
 ponder.on('OutcomeRouter:Swapped', async ({ event, context }) => {

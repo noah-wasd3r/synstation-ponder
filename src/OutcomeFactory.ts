@@ -8,7 +8,7 @@ ponder.on('OutcomeFactory:ConditionDeployed', async ({ event, context }) => {
   //   event.trace.gasUsed;
   //          ^? bigint
 
-  const { idx: marketIndex, conditions, resolver, collateralToken } = event.args;
+  const { idx: marketIndex, condition, resolver, collateralToken } = event.args;
 
   // const [title, conditionNames, conditionsSymbols, resolver, collateralToken] = event.args;
 
@@ -21,7 +21,7 @@ ponder.on('OutcomeFactory:ConditionDeployed', async ({ event, context }) => {
     args: [marketIndex],
   });
 
-  const deployedMarket = await context.db
+  await context.db
     .insert(Market)
     .values({
       id: context.network.name.concat('-').concat(marketIndex.toString()),
@@ -33,36 +33,29 @@ ponder.on('OutcomeFactory:ConditionDeployed', async ({ event, context }) => {
     })
     .onConflictDoNothing();
 
-  let conditionsSymbols = [];
-  for (let i = 0; i < conditions.length; i++) {
-    const symbol = await context.client.readContract({
-      abi: erc20Abi,
-      address: conditions[i],
-      functionName: 'symbol',
-      args: [],
-    });
+  const symbol = await context.client.readContract({
+    abi: erc20Abi,
+    address: condition,
+    functionName: 'symbol',
+    args: [],
+  });
 
-    conditionsSymbols.push(symbol);
-  }
-
-  await context.db.insert(Condition).values(
-    conditions.map((address, i) => ({
-      address: address,
-      marketIndex: marketIndex.toString(),
-      symbol: conditionsSymbols[i] as string,
-      name: conditionsSymbols[i] as string,
-    }))
-  );
+  await context.db.insert(Condition).values({
+    address: condition,
+    marketIndex: marketIndex.toString(),
+    symbol: symbol as string,
+    name: symbol as string,
+  });
 });
 
 ponder.on('OutcomeFactory:ConditionsResolved', async ({ event, context }) => {
   const { idx: resolvedMarketIndex, distributionHint } = event.args;
 
-  await context.db
-    .update(Market, {
-      id: context.network.name.concat('-').concat(resolvedMarketIndex.toString()),
-    })
-    .set((row) => ({ isResolved: true, resolvedAt: event.block.timestamp }));
+  // await context.db
+  //   .update(Market, {
+  //     id: context.network.name.concat('-').concat(resolvedMarketIndex.toString()),
+  //   })
+  //   .set((row) => ({ isResolved: true, resolvedAt: event.block.timestamp }));
 });
 
 ponder.on('OutcomeFactory:ConditionsRedeemed', async ({ event, context }) => {

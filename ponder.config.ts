@@ -1,5 +1,5 @@
-import { createConfig, loadBalance, mergeAbis } from 'ponder';
-import { http, createPublicClient } from 'viem';
+import { createConfig, factory, loadBalance, mergeAbis } from 'ponder';
+import { http, createPublicClient, parseAbiItem, erc20Abi } from 'viem';
 
 import { weth9Abi } from './abis/weth9Abi';
 import { PreStakingAbi } from './abis/PreStakingAbi';
@@ -54,6 +54,7 @@ export default createConfig({
       network: {
         minato: {
           address: '0xE97A28a44e13A4BD74b64d5aB31423bb840E9986',
+
           startBlock: 5437872,
         },
       },
@@ -64,6 +65,30 @@ export default createConfig({
         minato: {
           address: '0x92224F3D739Ea6f25920693531E09BA97b54E2d2',
           startBlock: 5645792,
+        },
+      },
+    },
+    OutcomeToken: {
+      abi: erc20Abi,
+      network: {
+        minato: {
+          address: factory({
+            address: '0xE97A28a44e13A4BD74b64d5aB31423bb840E9986',
+            event: parseAbiItem(
+              'event ConditionDeployed(uint256 indexed idx, address condition, address resolver, address collateralToken)'
+            ),
+            parameter: 'condition',
+          }),
+          startBlock: 5437872,
+        },
+      },
+    },
+    TestToken: {
+      abi: erc20Abi,
+      network: {
+        minato: {
+          address: '0x54cffBa35CC7ebE2c852E9242B8F0bC71bDC5D18',
+          startBlock: 5656586,
         },
       },
     },

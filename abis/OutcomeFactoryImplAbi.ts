@@ -12,9 +12,9 @@ export const OutcomeFactoryImplAbi = [
       },
       {
         indexed: false,
-        internalType: 'address[]',
-        name: 'conditions',
-        type: 'address[]',
+        internalType: 'address',
+        name: 'condition',
+        type: 'address',
       },
       {
         indexed: false,
