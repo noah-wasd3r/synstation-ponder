@@ -1,5 +1,5 @@
 import { ponder } from 'ponder:registry';
-import { Condition, ConditionRedeemEvent, Market } from '../ponder.schema';
+import { Condition, conditionRedeemEvent, Market } from '../ponder.schema';
 import { erc20Abi } from 'viem';
 
 ponder.on('OutcomeFactory:ConditionDeployed', async ({ event, context }) => {
@@ -68,7 +68,7 @@ ponder.on('OutcomeFactory:ConditionsResolved', async ({ event, context }) => {
 ponder.on('OutcomeFactory:ConditionsRedeemed', async ({ event, context }) => {
   const { idx, user, condition, conditionAmount, collateralAmount } = event.args;
 
-  await context.db.insert(ConditionRedeemEvent).values({
+  await context.db.insert(conditionRedeemEvent).values({
     id: user.concat('-').concat(condition),
     marketIndex: idx.toString(),
     conditionAddress: condition,
