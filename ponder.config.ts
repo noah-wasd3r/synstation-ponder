@@ -4,9 +4,13 @@ import { http, createPublicClient, parseAbiItem, erc20Abi } from 'viem';
 import { weth9Abi } from './abis/weth9Abi';
 import { PreStakingAbi } from './abis/PreStakingAbi';
 import { StakingAbi } from './abis/StakingAbi';
+
 import { OutcomeFactoryImplAbi } from './abis/OutcomeFactoryImplAbi';
 import { OutcomeFactoryProxyAbi } from './abis/OutcomeFactoryProxyAbi';
 import { OutcomeRouterAbi } from './abis/OutcomeRouterAbi';
+import { PancakeV3FactoryAbi } from './abis/PancakeV3FactoryAbi';
+import { NonfungiblePositionManagerAbi } from './abis/NonfungiblePositionManagerAbi';
+import { PancakeV3PoolAbi } from './abis/PancakeV3PoolAbi';
 export default createConfig({
   networks: {
     mainnet: {
@@ -22,6 +26,10 @@ export default createConfig({
     minato: {
       chainId: 1946,
       transport: http(process.env.PONDER_RPC_URL_1946),
+    },
+    soneium: {
+      chainId: 1868,
+      transport: http(process.env.PONDER_RPC_URL_1868),
     },
   },
   contracts: {
@@ -48,49 +56,82 @@ export default createConfig({
       abi: StakingAbi,
     },
 
-    OutcomeFactory: {
-      abi: mergeAbis([OutcomeFactoryImplAbi, OutcomeFactoryProxyAbi]),
-      // includeCallTraces: true,
+    V3Factory: {
+      abi: PancakeV3FactoryAbi,
       network: {
-        minato: {
-          address: '0xE97A28a44e13A4BD74b64d5aB31423bb840E9986',
-
-          startBlock: 5437872,
+        soneium: {
+          address: '0x81B4029bfCb5302317fe5d35D54544EA3328e30f',
+          startBlock: 1812231,
         },
       },
     },
-    OutcomeRouter: {
-      abi: OutcomeRouterAbi,
+    NonfungiblePositionManager: {
+      abi: NonfungiblePositionManagerAbi,
       network: {
-        minato: {
-          address: '0x92224F3D739Ea6f25920693531E09BA97b54E2d2',
-          startBlock: 5645792,
+        soneium: {
+          address: '0xc9b9DDEe50EA1842A36e4AA02d50211586b6eE63',
+          startBlock: 1812678,
         },
       },
     },
-    OutcomeToken: {
-      abi: erc20Abi,
-      network: {
-        minato: {
-          address: factory({
-            address: '0xE97A28a44e13A4BD74b64d5aB31423bb840E9986',
-            event: parseAbiItem(
-              'event ConditionDeployed(uint256 indexed idx, address condition, address resolver, address collateralToken)'
-            ),
-            parameter: 'condition',
-          }),
-          startBlock: 5437872,
-        },
-      },
-    },
-    TestToken: {
-      abi: erc20Abi,
-      network: {
-        minato: {
-          address: '0x54cffBa35CC7ebE2c852E9242B8F0bC71bDC5D18',
-          startBlock: 5656586,
-        },
-      },
+    SudoswapPool: {
+      abi: PancakeV3PoolAbi,
+      network: 'soneium',
+      address: factory({
+        // The address of the factory contract that creates instances of this child contract.
+        address: '0x81B4029bfCb5302317fe5d35D54544EA3328e30f',
+        // The event emitted by the factory that announces a new instance of this child contract.
+        event: parseAbiItem(
+          'event PoolCreated(address indexed token0,address indexed token1,uint24 indexed fee,int24 tickSpacing,address pool)'
+        ),
+        // The name of the parameter that contains the address of the new child contract.
+        parameter: 'pool',
+      }),
+      startBlock: 1812231,
     },
   },
+  //   OutcomeFactory: {
+  //     abi: OutcomeFactoryImplAbi,
+  //     network: {
+  //       soneium: {
+  //         address: '0xa546b3a3C71aD7ED2152551490049f85FE136B34',
+
+  //         startBlock: 1812496,
+  //       },
+  //     },
+  //   },
+  //   OutcomeRouter: {
+  //     abi: OutcomeRouterAbi,
+  //     network: {
+  //       minato: {
+  //         address: '0x92224F3D739Ea6f25920693531E09BA97b54E2d2',
+  //         startBlock: 5645792,
+  //       },
+  //     },
+  //   },
+  //   OutcomeToken: {
+  //     abi: erc20Abi,
+  //     network: {
+  //       minato: {
+  //         address: factory({
+  //           address: '0xE97A28a44e13A4BD74b64d5aB31423bb840E9986',
+  //           event: parseAbiItem(
+  //             'event ConditionDeployed(uint256 indexed idx, address condition, address resolver, address collateralToken)'
+  //           ),
+  //           parameter: 'condition',
+  //         }),
+  //         startBlock: 5437872,
+  //       },
+  //     },
+  //   },
+  //   TestToken: {
+  //     abi: erc20Abi,
+  //     network: {
+  //       minato: {
+  //         address: '0x54cffBa35CC7ebE2c852E9242B8F0bC71bDC5D18',
+  //         startBlock: 5656586,
+  //       },
+  //     },
+  //   },
+  // },
 });

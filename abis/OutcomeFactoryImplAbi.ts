@@ -54,6 +54,31 @@ export const OutcomeFactoryImplAbi = [
         type: 'uint256',
       },
     ],
+    name: 'ConditionsCombined',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'idx',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'address',
+        name: 'user',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'collateralAmount',
+        type: 'uint256',
+      },
+    ],
     name: 'ConditionsMinted',
     type: 'event',
   },
@@ -207,6 +232,24 @@ export const OutcomeFactoryImplAbi = [
       },
     ],
     stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'idx',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'combineConditions',
+    outputs: [],
+    stateMutability: 'nonpayable',
     type: 'function',
   },
   {

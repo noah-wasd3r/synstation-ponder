@@ -168,3 +168,5 @@ export const approvalEvent = onchainTable('approval_event', (t) => ({
   owner: t.hex().notNull(),
   spender: t.hex().notNull(),
 }));
+
+// For V3 Pool
