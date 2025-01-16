@@ -50,40 +50,6 @@ export const PreStaking = onchainTable('pre_staking', (t) => ({
   timestamp: t.bigint(),
 }));
 
-export const Market = onchainTable('market', (t) => ({
-  id: t.text().primaryKey(),
-  marketIndex: t.text().notNull(),
-  title: t.text().notNull(),
-
-  resolver: t.text().notNull(),
-  collateralToken: t.text().notNull(),
-
-  isResolved: t.boolean().default(false),
-
-  //
-
-  createdAt: t.bigint().notNull(),
-  resolvedAt: t.bigint(),
-}));
-
-export const MarketRelation = relations(Market, ({ many }) => ({
-  conditions: many(Condition),
-}));
-
-export const Condition = onchainTable('condition', (t) => ({
-  address: t.hex().primaryKey(),
-  marketIndex: t.text().notNull(),
-  symbol: t.text().notNull(),
-  name: t.text().notNull(),
-}));
-
-export const ConditionRelation = relations(Condition, ({ one }) => ({
-  market: one(Market, {
-    fields: [Condition.marketIndex],
-    references: [Market.marketIndex],
-  }),
-}));
-
 export const conditionRedeemEvent = onchainTable(
   'condition_redeem_event',
   (t) => ({
@@ -192,31 +158,6 @@ export const bundle = onchainTable('bundle', (t) => ({
   ethPriceUSD: t.bigint().notNull(),
 }));
 
-/*
-type Token @entity {
-  # token address
-  id: ID!
-  # token symbol
-  symbol: String!
-  # token name
-  name: String!
-  # token decimals
-  decimals: BigInt!
-  # token total supply
-  totalSupply: BigInt!
-  # volume in token units
-  volume: BigDecimal!
-  # transactions across all pools that include this token
-  txCount: BigInt!
-  # number of pools containing this token
-  poolCount: BigInt!
-  # liquidity across all pools in token units
-  totalValueLocked: BigDecimal!
-  # pools token is in that are white listed for USD pricing
-  whitelistPools: [Pool!]!
-}
-  */
-
 export const token = onchainTable('token', (t) => ({
   id: t.text().primaryKey(),
   symbol: t.text().notNull(),
@@ -229,71 +170,39 @@ export const token = onchainTable('token', (t) => ({
   totalValueLocked: t.bigint().notNull(),
 }));
 
-export const pool = onchainTable('pool', (t) => ({
-  id: t.text().primaryKey(), // poolAddress
-  createdAtTimestamp: t.bigint().notNull(),
-  createdAtBlockNumber: t.bigint().notNull(),
-  token0: t.hex().notNull(),
-  token1: t.hex().notNull(),
-  feeTier: t.integer().notNull(),
-  liquidity: t.bigint().notNull(),
-  sqrtPrice: t.bigint().notNull(),
-  feeGrowthGlobal0X128: t.bigint().notNull(),
-  feeGrowthGlobal1X128: t.bigint().notNull(),
-  token0Price: t.bigint().notNull(),
-  token1Price: t.bigint().notNull(),
-  tick: t.bigint().notNull(),
-  observationIndex: t.bigint().notNull(),
-  volumeToken0: t.bigint().notNull(),
-  volumeToken1: t.bigint().notNull(),
-  txCount: t.bigint().notNull(),
-  collectedFeesToken0: t.bigint().notNull(),
-  collectedFeesToken1: t.bigint().notNull(),
-  totalValueLockedToken0: t.bigint().notNull(),
-  totalValueLockedToken1: t.bigint().notNull(),
-  liquidityProviderCount: t.bigint().notNull(),
-  // for prediction
-  conditionPrice: t.bigint().notNull(),
-}));
-
-/*
-type Position @entity {
-  # Positions created through NonfungiblePositionManager
-  # NFT token id
-  id: ID!
-  # owner of the NFT
-  owner: Bytes!
-  # pool position is within
-  pool: Pool!
-  # allow indexing by tokens
-  token0: Token!
-  # allow indexing by tokens
-  token1: Token!
-  # lower tick of the position
-  tickLower: Tick!
-  # upper tick of the position
-  tickUpper: Tick!
-  # total position liquidity
-  liquidity: BigInt!
-  # amount of token 0 ever deposited to position
-  depositedToken0: BigDecimal!
-  # amount of token 1 ever deposited to position
-  depositedToken1: BigDecimal!
-  # amount of token 0 ever withdrawn from position (without fees)
-  withdrawnToken0: BigDecimal!
-  # amount of token 1 ever withdrawn from position (without fees)
-  withdrawnToken1: BigDecimal!
-  # all time collected fees in token0
-  collectedFeesToken0: BigDecimal!
-  # all time collected fees in token1
-  collectedFeesToken1: BigDecimal!
-  # tx in which the position was initialized
-  transaction: Transaction!
-  # vars needed for fee computation
-  feeGrowthInside0LastX128: BigInt!
-  feeGrowthInside1LastX128: BigInt!
-}
-*/
+export const pool = onchainTable(
+  'pool',
+  (t) => ({
+    id: t.text().primaryKey(), // poolAddress
+    createdAtTimestamp: t.bigint().notNull(),
+    createdAtBlockNumber: t.bigint().notNull(),
+    token0: t.hex().notNull(),
+    token1: t.hex().notNull(),
+    feeTier: t.integer().notNull(),
+    liquidity: t.bigint().notNull(),
+    sqrtPrice: t.bigint().notNull(),
+    feeGrowthGlobal0X128: t.bigint().notNull(),
+    feeGrowthGlobal1X128: t.bigint().notNull(),
+    token0Price: t.bigint().notNull(),
+    token1Price: t.bigint().notNull(),
+    tick: t.bigint().notNull(),
+    observationIndex: t.bigint().notNull(),
+    volumeToken0: t.bigint().notNull(),
+    volumeToken1: t.bigint().notNull(),
+    txCount: t.bigint().notNull(),
+    collectedFeesToken0: t.bigint().notNull(),
+    collectedFeesToken1: t.bigint().notNull(),
+    totalValueLockedToken0: t.bigint().notNull(),
+    totalValueLockedToken1: t.bigint().notNull(),
+    liquidityProviderCount: t.bigint().notNull(),
+    // for prediction
+    conditionPrice: t.bigint().notNull(),
+    marketIndex: t.text().notNull(),
+  }),
+  (table) => ({
+    marketIndexIdx: index('pool_market_index_idx').on(table.marketIndex),
+  })
+);
 
 export const position = onchainTable('position', (t) => ({
   id: t.text().primaryKey(),
@@ -312,4 +221,62 @@ export const position = onchainTable('position', (t) => ({
   collectedFeesToken1: t.bigint().notNull(),
   feeGrowthInside0LastX128: t.bigint().notNull(),
   feeGrowthInside1LastX128: t.bigint().notNull(),
+}));
+
+// export const MarketPoolRelation = relations(Market, ({ many }) => ({
+//   pools: many(pool),
+// }));
+
+// export const PoolMarketRelation = relations(pool, ({ one }) => ({
+//   market: one(Market, {
+//     fields: [pool.marketIndex],
+//     references: [Market.marketIndex],
+//   }),
+// }));
+export const Market = onchainTable('market', (t) => ({
+  id: t.text().primaryKey(),
+  marketIndex: t.text().notNull(),
+  title: t.text().notNull(),
+
+  resolver: t.text().notNull(),
+  collateralToken: t.text().notNull(),
+
+  isResolved: t.boolean().default(false),
+
+  //
+
+  createdAt: t.bigint().notNull(),
+  resolvedAt: t.bigint(),
+}));
+
+export const Condition = onchainTable(
+  'condition',
+  (t) => ({
+    address: t.hex().primaryKey(),
+    marketIndex: t.text().notNull(),
+    symbol: t.text().notNull(),
+    name: t.text().notNull(),
+  }),
+  (table) => ({
+    marketIndexIdx: index('condition_market_index_idx').on(table.marketIndex),
+  })
+);
+
+export const MarketRelation = relations(Market, ({ many }) => ({
+  conditions: many(Condition),
+  pools: many(pool),
+}));
+
+export const ConditionRelation = relations(Condition, ({ one }) => ({
+  market: one(Market, {
+    fields: [Condition.marketIndex],
+    references: [Market.marketIndex],
+  }),
+}));
+
+export const PoolRelation = relations(pool, ({ one }) => ({
+  market: one(Market, {
+    fields: [pool.marketIndex],
+    references: [Market.marketIndex],
+  }),
 }));

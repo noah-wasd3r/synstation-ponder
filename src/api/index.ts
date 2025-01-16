@@ -6,23 +6,6 @@ import { account, pool, transferEvent } from 'ponder:schema';
 
 ponder.use('/', graphql());
 
-ponder.get('/condition', async (c) => {
-  const account = await c.db.select().from(Condition);
-
-  const result = replaceBigInts(account, (v) => Number(v));
-  return c.json(result);
-});
-ponder.get('/market', async (c) => {
-  const account = await c.db.query.Market.findMany({
-    with: {
-      conditions: true,
-    },
-  });
-
-  const result = replaceBigInts(account, (v) => Number(v));
-  return c.json(result);
-});
-
 ponder.get('/user-pre-staking', async (c) => {
   const data = await c.db.select().from(UserPreStaking);
 
@@ -136,30 +119,31 @@ ponder.get('/history', async (c) => {
   return c.json(result);
 });
 
-ponder.get('/transfer-history', async (c) => {
-  const data = await c.db.select().from(account);
-  const data2 = await c.db.select().from(transferEvent);
-
-  const result = replaceBigInts(data, (v) => Number(v));
-  const result2 = replaceBigInts(data2, (v) => Number(v));
-  return c.json({ account: result, transferEvent: result2 });
-});
-
-ponder.get('/positions', async (c) => {
-  let { user } = c.req.query();
-  if (!user) {
-    return c.json({ error: 'user is required' }, 400);
-  }
-  user = user.toLowerCase();
-
-  const data = await c.db.select().from(account).where(eq(account.address, user));
+ponder.get('/pools', async (c) => {
+  const data = await c.db.select().from(pool);
   const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
 });
 
-// for v3
-ponder.get('/pools', async (c) => {
-  const data = await c.db.select().from(pool);
-  const result = replaceBigInts(data, (v) => Number(v));
+ponder.get('/conditions', async (c) => {
+  const account = await c.db.select().from(Condition);
+
+  const result = replaceBigInts(account, (v) => Number(v));
+  return c.json(result);
+});
+
+ponder.get('/markets', async (c) => {
+  const { page, pageSize } = c.req.query();
+  const markets = await c.db.query.Market.findMany({
+    orderBy: (market, { desc }) => [desc(market.createdAt)],
+    limit: Number(pageSize),
+    offset: (Number(page) - 1) * Number(pageSize),
+    with: {
+      conditions: true,
+      pools: true,
+    },
+  });
+
+  const result = replaceBigInts(markets, (v) => Number(v));
   return c.json(result);
 });

@@ -89,17 +89,17 @@ export default createConfig({
       }),
       startBlock: 1812231,
     },
-  },
-  //   OutcomeFactory: {
-  //     abi: OutcomeFactoryImplAbi,
-  //     network: {
-  //       soneium: {
-  //         address: '0xa546b3a3C71aD7ED2152551490049f85FE136B34',
+    OutcomeFactory: {
+      abi: OutcomeFactoryImplAbi,
+      network: {
+        soneium: {
+          address: '0xa546b3a3C71aD7ED2152551490049f85FE136B34',
 
-  //         startBlock: 1812496,
-  //       },
-  //     },
-  //   },
+          startBlock: 1812496,
+        },
+      },
+    },
+  },
   //   OutcomeRouter: {
   //     abi: OutcomeRouterAbi,
   //     network: {

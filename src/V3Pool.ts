@@ -1,4 +1,4 @@
-import { factory, pool } from 'ponder:schema';
+import { factory, pool, Condition } from 'ponder:schema';
 
 import { ponder } from 'ponder:registry';
 import { sqrtPriceX96ToTokenPrices } from './utils/pricing';
@@ -22,6 +22,21 @@ ponder.on('V3Factory:PoolCreated', async ({ event, context }) => {
   // Address of the child contract that was created.
   const poolAddress = event.args.pool;
   //        ^? string
+
+  // TODO: find marketIndex from token0 or token1 that is not a GM which means it is condition token
+  // 1. find condition Token
+  const conditionTokenAddress =
+    event.args.token0.toLowerCase() === GM[context.network.chainId].toLowerCase()
+      ? event.args.token1.toLowerCase()
+      : event.args.token0.toLowerCase();
+  // 2. find marketIndex from condition Token (from outcomeFRC20Factory ponder.)
+  const conditionToken = await context.db.find(Condition, {
+    address: conditionTokenAddress as `0x${string}`,
+  });
+
+  if (!conditionToken) {
+    throw new Error('Condition token not found');
+  }
 
   await context.db.insert(pool).values({
     id: poolAddress,
@@ -47,6 +62,7 @@ ponder.on('V3Factory:PoolCreated', async ({ event, context }) => {
     totalValueLockedToken1: 0n,
     liquidityProviderCount: 0n,
     conditionPrice: 0n,
+    marketIndex: conditionToken?.marketIndex ?? '',
   });
 });
 
