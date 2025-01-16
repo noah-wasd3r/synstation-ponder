@@ -1,3 +1,3 @@
 export const GM = {
-  [1868]: '0x7F81F7E9D9Bfc0786868127EEc62EEb440193b3A',
+  [1868]: '0x7f81f7e9d9bfc0786868127eec62eeb440193b3a',
 };

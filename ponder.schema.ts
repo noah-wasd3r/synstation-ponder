@@ -170,3 +170,146 @@ export const approvalEvent = onchainTable('approval_event', (t) => ({
 }));
 
 // For V3 Pool
+
+export const factory = onchainTable('factory', (t) => ({
+  id: t.text().primaryKey(), // factoryAddress
+  poolCount: t.bigint().notNull().default(0n),
+  txCount: t.bigint().notNull().default(0n),
+  owner: t.hex().notNull(), // factory current owner
+}));
+
+/*
+# stores for USD calculations
+type Bundle @entity {
+  id: ID!
+  # price of ETH in usd
+  ethPriceUSD: BigDecimal!
+}
+*/
+
+export const bundle = onchainTable('bundle', (t) => ({
+  id: t.text().primaryKey(),
+  ethPriceUSD: t.bigint().notNull(),
+}));
+
+/*
+type Token @entity {
+  # token address
+  id: ID!
+  # token symbol
+  symbol: String!
+  # token name
+  name: String!
+  # token decimals
+  decimals: BigInt!
+  # token total supply
+  totalSupply: BigInt!
+  # volume in token units
+  volume: BigDecimal!
+  # transactions across all pools that include this token
+  txCount: BigInt!
+  # number of pools containing this token
+  poolCount: BigInt!
+  # liquidity across all pools in token units
+  totalValueLocked: BigDecimal!
+  # pools token is in that are white listed for USD pricing
+  whitelistPools: [Pool!]!
+}
+  */
+
+export const token = onchainTable('token', (t) => ({
+  id: t.text().primaryKey(),
+  symbol: t.text().notNull(),
+  name: t.text().notNull(),
+  decimals: t.bigint().notNull(),
+  totalSupply: t.bigint().notNull(),
+  volume: t.bigint().notNull(),
+  txCount: t.bigint().notNull(),
+  poolCount: t.bigint().notNull(),
+  totalValueLocked: t.bigint().notNull(),
+}));
+
+export const pool = onchainTable('pool', (t) => ({
+  id: t.text().primaryKey(), // poolAddress
+  createdAtTimestamp: t.bigint().notNull(),
+  createdAtBlockNumber: t.bigint().notNull(),
+  token0: t.hex().notNull(),
+  token1: t.hex().notNull(),
+  feeTier: t.integer().notNull(),
+  liquidity: t.bigint().notNull(),
+  sqrtPrice: t.bigint().notNull(),
+  feeGrowthGlobal0X128: t.bigint().notNull(),
+  feeGrowthGlobal1X128: t.bigint().notNull(),
+  token0Price: t.bigint().notNull(),
+  token1Price: t.bigint().notNull(),
+  tick: t.bigint().notNull(),
+  observationIndex: t.bigint().notNull(),
+  volumeToken0: t.bigint().notNull(),
+  volumeToken1: t.bigint().notNull(),
+  txCount: t.bigint().notNull(),
+  collectedFeesToken0: t.bigint().notNull(),
+  collectedFeesToken1: t.bigint().notNull(),
+  totalValueLockedToken0: t.bigint().notNull(),
+  totalValueLockedToken1: t.bigint().notNull(),
+  liquidityProviderCount: t.bigint().notNull(),
+  // for prediction
+  conditionPrice: t.bigint().notNull(),
+}));
+
+/*
+type Position @entity {
+  # Positions created through NonfungiblePositionManager
+  # NFT token id
+  id: ID!
+  # owner of the NFT
+  owner: Bytes!
+  # pool position is within
+  pool: Pool!
+  # allow indexing by tokens
+  token0: Token!
+  # allow indexing by tokens
+  token1: Token!
+  # lower tick of the position
+  tickLower: Tick!
+  # upper tick of the position
+  tickUpper: Tick!
+  # total position liquidity
+  liquidity: BigInt!
+  # amount of token 0 ever deposited to position
+  depositedToken0: BigDecimal!
+  # amount of token 1 ever deposited to position
+  depositedToken1: BigDecimal!
+  # amount of token 0 ever withdrawn from position (without fees)
+  withdrawnToken0: BigDecimal!
+  # amount of token 1 ever withdrawn from position (without fees)
+  withdrawnToken1: BigDecimal!
+  # all time collected fees in token0
+  collectedFeesToken0: BigDecimal!
+  # all time collected fees in token1
+  collectedFeesToken1: BigDecimal!
+  # tx in which the position was initialized
+  transaction: Transaction!
+  # vars needed for fee computation
+  feeGrowthInside0LastX128: BigInt!
+  feeGrowthInside1LastX128: BigInt!
+}
+*/
+
+export const position = onchainTable('position', (t) => ({
+  id: t.text().primaryKey(),
+  owner: t.hex().notNull(),
+  pool: t.hex().notNull(),
+  token0: t.hex().notNull(),
+  token1: t.hex().notNull(),
+  tickLower: t.bigint().notNull(),
+  tickUpper: t.bigint().notNull(),
+  liquidity: t.bigint().notNull(),
+  depositedToken0: t.bigint().notNull(),
+  depositedToken1: t.bigint().notNull(),
+  withdrawnToken0: t.bigint().notNull(),
+  withdrawnToken1: t.bigint().notNull(),
+  collectedFeesToken0: t.bigint().notNull(),
+  collectedFeesToken1: t.bigint().notNull(),
+  feeGrowthInside0LastX128: t.bigint().notNull(),
+  feeGrowthInside1LastX128: t.bigint().notNull(),
+}));

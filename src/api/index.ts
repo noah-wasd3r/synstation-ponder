@@ -2,7 +2,7 @@ import { ponder } from 'ponder:registry';
 import { Condition, conditionRedeemEvent, Market, swapEvent, UserPreStaking } from '../../ponder.schema';
 import { and, eq, graphql, inArray, index, or, replaceBigInts, union } from 'ponder';
 import { numberToHex } from 'viem';
-import { account, transferEvent } from 'ponder:schema';
+import { account, pool, transferEvent } from 'ponder:schema';
 
 ponder.use('/', graphql());
 
@@ -153,6 +153,13 @@ ponder.get('/positions', async (c) => {
   user = user.toLowerCase();
 
   const data = await c.db.select().from(account).where(eq(account.address, user));
+  const result = replaceBigInts(data, (v) => Number(v));
+  return c.json(result);
+});
+
+// for v3
+ponder.get('/pools', async (c) => {
+  const data = await c.db.select().from(pool);
   const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
 });

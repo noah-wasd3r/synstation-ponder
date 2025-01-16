@@ -74,7 +74,7 @@ export default createConfig({
         },
       },
     },
-    SudoswapPool: {
+    V3Pool: {
       abi: PancakeV3PoolAbi,
       network: 'soneium',
       address: factory({
