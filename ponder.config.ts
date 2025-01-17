@@ -36,22 +36,22 @@ export default createConfig({
     PreStaking: {
       abi: PreStakingAbi,
       network: {
-        // astar: {
-        //   address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
-        //   startBlock: 7291207,
-        // },
-        // mainnet: {
-        //   address: '0x3BaC111A6F5ED6A554616373d5c7D858d7c10d88',
-        //   startBlock: 20975761,
-        // },
+        astar: {
+          address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
+          startBlock: 7291207,
+        },
+        mainnet: {
+          address: '0x3BaC111A6F5ED6A554616373d5c7D858d7c10d88',
+          startBlock: 20975761,
+        },
       },
     },
     Staking: {
       network: {
-        // mainnet: {
-        //   address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
-        //   startBlock: 20623833,
-        // },
+        mainnet: {
+          address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
+          startBlock: 20623833,
+        },
       },
       abi: StakingAbi,
     },
