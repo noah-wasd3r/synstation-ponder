@@ -223,16 +223,6 @@ export const position = onchainTable('position', (t) => ({
   feeGrowthInside1LastX128: t.bigint().notNull(),
 }));
 
-// export const MarketPoolRelation = relations(Market, ({ many }) => ({
-//   pools: many(pool),
-// }));
-
-// export const PoolMarketRelation = relations(pool, ({ one }) => ({
-//   market: one(Market, {
-//     fields: [pool.marketIndex],
-//     references: [Market.marketIndex],
-//   }),
-// }));
 export const Market = onchainTable('market', (t) => ({
   id: t.text().primaryKey(),
   marketIndex: t.text().notNull(),
@@ -247,6 +237,35 @@ export const Market = onchainTable('market', (t) => ({
 
   createdAt: t.bigint().notNull(),
   resolvedAt: t.bigint(),
+}));
+
+export const SwapEvent = onchainTable(
+  'swap_event',
+  (t) => ({
+    id: t.text().primaryKey(), // txHash+'#' + index in swaps tx array
+    timestamp: t.bigint().notNull(),
+    fromToken: t.hex().notNull(),
+    toToken: t.hex().notNull(),
+    txSender: t.hex().notNull(),
+    pool: t.hex().notNull(),
+    marketIndex: t.text().notNull(),
+    amountIn: t.bigint().notNull(),
+    amountOut: t.bigint().notNull(),
+  }),
+  (table) => ({
+    txSenderIdx: index('tx_sender_idx').on(table.txSender),
+    marketIndexIdx: index('market_index_idx').on(table.marketIndex),
+  })
+);
+
+export const OutcomeSwapEvent = onchainTable('outcome_swap_event', (t) => ({
+  id: t.text().primaryKey(),
+  timestamp: t.bigint().notNull(),
+  fromToken: t.hex().notNull(),
+  toToken: t.hex().notNull(),
+  txSender: t.hex().notNull(),
+  amountIn: t.bigint().notNull(),
+  amountOut: t.bigint().notNull(),
 }));
 
 export const Condition = onchainTable(

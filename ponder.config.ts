@@ -99,16 +99,17 @@ export default createConfig({
         },
       },
     },
+    OutcomeRouter: {
+      abi: OutcomeRouterAbi,
+      network: {
+        soneium: {
+          address: '0x1ccAA0C6448CCd836A09f62B1C0b2Df76f910424',
+
+          startBlock: 1849376,
+        },
+      },
+    },
   },
-  //   OutcomeRouter: {
-  //     abi: OutcomeRouterAbi,
-  //     network: {
-  //       minato: {
-  //         address: '0x92224F3D739Ea6f25920693531E09BA97b54E2d2',
-  //         startBlock: 5645792,
-  //       },
-  //     },
-  //   },
   //   OutcomeToken: {
   //     abi: erc20Abi,
   //     network: {

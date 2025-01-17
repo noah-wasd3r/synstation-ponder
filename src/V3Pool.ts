@@ -1,4 +1,4 @@
-import { factory, pool, Condition } from 'ponder:schema';
+import { factory, pool, Condition, SwapEvent } from 'ponder:schema';
 
 import { ponder } from 'ponder:registry';
 import { sqrtPriceX96ToTokenPrices } from './utils/pricing';
@@ -113,7 +113,7 @@ ponder.on('V3Pool:Swap', async ({ event, context }) => {
 
   const conditionPrice = GM[context.network.chainId] === loadedPool.token0 ? prices[0] : prices[1];
 
-  await context.db
+  const updatedPool = await context.db
     .update(pool, {
       id: event.log.address,
     })
@@ -132,6 +132,18 @@ ponder.on('V3Pool:Swap', async ({ event, context }) => {
       token1Price: prices[1],
       conditionPrice: conditionPrice,
     }));
+
+  await context.db.insert(SwapEvent).values({
+    id: event.transaction.hash + '#' + updatedPool.txCount.toString() + '#' + event.log.logIndex.toString(),
+    timestamp: event.block.timestamp,
+    fromToken: loadedPool.token0,
+    toToken: loadedPool.token1,
+    txSender: event.transaction.from,
+    pool: event.log.address,
+    marketIndex: loadedPool.marketIndex,
+    amountIn: event.args.amount0,
+    amountOut: event.args.amount1,
+  });
 });
 
 ponder.on('V3Pool:Mint', async ({ event, context }) => {

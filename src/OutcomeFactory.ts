@@ -1,5 +1,5 @@
 import { ponder } from 'ponder:registry';
-import { Condition, Market } from 'ponder:schema';
+import { Condition, Market, OutcomeSwapEvent } from 'ponder:schema';
 import { erc20Abi } from 'viem';
 import { OutcomeFactoryImplAbi } from '../abis/OutcomeFactoryImplAbi';
 
@@ -51,4 +51,16 @@ ponder.on('OutcomeFactory:ConditionsResolved', async ({ event, context }) => {
       isResolved: true,
       resolvedAt: event.block.timestamp,
     });
+});
+
+ponder.on('OutcomeRouter:Swapped', async ({ event, context }) => {
+  await context.db.insert(OutcomeSwapEvent).values({
+    id: event.transaction.hash + '#' + event.log.logIndex.toString(),
+    timestamp: event.block.timestamp,
+    fromToken: event.args.from,
+    toToken: event.args.to,
+    txSender: event.transaction.from,
+    amountIn: event.args.amountIn,
+    amountOut: event.args.amountOut,
+  });
 });

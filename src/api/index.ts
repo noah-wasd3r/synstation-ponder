@@ -2,25 +2,12 @@ import { ponder } from 'ponder:registry';
 import { Condition, conditionRedeemEvent, Market, swapEvent, UserPreStaking } from '../../ponder.schema';
 import { and, eq, graphql, inArray, index, or, replaceBigInts, union } from 'ponder';
 import { numberToHex } from 'viem';
-import { account, pool, transferEvent } from 'ponder:schema';
+import { account, OutcomeSwapEvent, pool, SwapEvent, transferEvent } from 'ponder:schema';
 
 ponder.use('/', graphql());
 
 ponder.get('/user-pre-staking', async (c) => {
   const data = await c.db.select().from(UserPreStaking);
-
-  const result = replaceBigInts(data, (v) => Number(v));
-  return c.json(result);
-});
-
-ponder.get('/swap-events', async (c) => {
-  let { user } = c.req.query();
-  if (!user) {
-    return c.json({ error: 'user is required' }, 400);
-  }
-  user = user.toLowerCase();
-  // @ts-ignore
-  const data = await c.db.select().from(swapEvent).where(eq(swapEvent.recipient, user));
 
   const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
@@ -145,5 +132,17 @@ ponder.get('/markets', async (c) => {
   });
 
   const result = replaceBigInts(markets, (v) => Number(v));
+  return c.json(result);
+});
+
+ponder.get('/v3-swap-events', async (c) => {
+  const data = await c.db.select().from(SwapEvent);
+  const result = replaceBigInts(data, (v) => Number(v));
+  return c.json(result);
+});
+
+ponder.get('/outcome-swap-events', async (c) => {
+  const data = await c.db.select().from(OutcomeSwapEvent);
+  const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
 });
