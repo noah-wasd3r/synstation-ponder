@@ -1,4 +1,4 @@
-import { factory, pool, Condition, SwapEvent } from 'ponder:schema';
+import { factory, pool, Condition, SwapEvent, poolPrice } from 'ponder:schema';
 
 import { ponder } from 'ponder:registry';
 import { sqrtPriceX96ToTokenPrices } from './utils/pricing';
@@ -74,14 +74,31 @@ ponder.on('V3Pool:Initialize', async ({ event, context }) => {
   if (!loadedPool) {
     throw new Error('Pool not found');
   }
+
+  const prices = sqrtPriceX96ToTokenPrices(event.args.sqrtPriceX96);
+
+  const conditionPrice = GM[context.network.chainId] === loadedPool.token0 ? prices[0] : prices[1];
+
   await context.db
     .update(pool, {
       id: event.log.address,
     })
-    .set({
+    .set((current) => ({
       tick: BigInt(event.args.tick),
       sqrtPrice: event.args.sqrtPriceX96,
-    });
+      conditionPrice: conditionPrice,
+    }));
+
+  // for chart
+  await context.db
+    .insert(poolPrice)
+    .values({
+      id: event.log.address + '-' + event.block.timestamp.toString(),
+      pool: event.log.address,
+      price: conditionPrice ?? 0n,
+      timestamp: event.block.timestamp,
+    })
+    .onConflictDoUpdate(() => ({ price: conditionPrice ?? 0n }));
 });
 ponder.on('V3Pool:Swap', async ({ event, context }) => {
   const loadedPool = await context.db.find(pool, {
@@ -144,6 +161,19 @@ ponder.on('V3Pool:Swap', async ({ event, context }) => {
     amountIn: event.args.amount0,
     amountOut: event.args.amount1,
   });
+
+  // for chart
+  await context.db
+    .insert(poolPrice)
+    .values({
+      id: event.log.address + '-' + event.block.timestamp.toString(),
+      pool: event.log.address,
+      price: prices[0] ?? 0n,
+      timestamp: event.block.timestamp,
+    })
+    .onConflictDoUpdate(() => ({
+      price: prices[0] ?? 0n,
+    }));
 });
 
 ponder.on('V3Pool:Mint', async ({ event, context }) => {

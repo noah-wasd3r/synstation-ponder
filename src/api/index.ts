@@ -1,8 +1,8 @@
 import { ponder } from 'ponder:registry';
 import { Condition, conditionRedeemEvent, Market, swapEvent, UserPreStaking } from '../../ponder.schema';
-import { and, eq, graphql, inArray, index, or, replaceBigInts, union } from 'ponder';
+import { and, eq, graphql, inArray, index, or, replaceBigInts, sql, union } from 'ponder';
 import { numberToHex } from 'viem';
-import { account, OutcomeSwapEvent, pool, SwapEvent, transferEvent } from 'ponder:schema';
+import { account, OutcomeSwapEvent, pool, poolPrice, SwapEvent, transferEvent } from 'ponder:schema';
 
 ponder.use('/', graphql());
 
@@ -120,19 +120,33 @@ ponder.get('/conditions', async (c) => {
 });
 
 ponder.get('/markets', async (c) => {
-  const { page, pageSize } = c.req.query();
-  const markets = await c.db.query.Market.findMany({
-    orderBy: (market, { desc }) => [desc(market.createdAt)],
-    limit: Number(pageSize),
-    offset: (Number(page) - 1) * Number(pageSize),
-    with: {
-      conditions: true,
-      pools: true,
-    },
-  });
+  const { page, pageSize, marketIndex } = c.req.query();
 
-  const result = replaceBigInts(markets, (v) => Number(v));
-  return c.json(result);
+  if (!marketIndex) {
+    const markets = await c.db.query.Market.findMany({
+      orderBy: (market, { desc }) => [desc(market.createdAt)],
+      limit: Number(pageSize),
+      offset: (Number(page) - 1) * Number(pageSize),
+      with: {
+        conditions: true,
+        pools: true,
+      },
+    });
+
+    const result = replaceBigInts(markets, (v) => Number(v));
+    return c.json(result);
+  } else {
+    const markets = await c.db.query.Market.findMany({
+      where: (market, { eq }) => eq(market.marketIndex, marketIndex),
+      with: {
+        conditions: true,
+        pools: true,
+      },
+    });
+
+    const result = replaceBigInts(markets, (v) => Number(v));
+    return c.json(result);
+  }
 });
 
 ponder.get('/v3-swap-events', async (c) => {
@@ -144,5 +158,45 @@ ponder.get('/v3-swap-events', async (c) => {
 ponder.get('/outcome-swap-events', async (c) => {
   const data = await c.db.select().from(OutcomeSwapEvent);
   const result = replaceBigInts(data, (v) => Number(v));
+  return c.json(result);
+});
+
+// for chart
+
+const queries = {
+  getPriceChartData: (poolAddress: string, startTimestamp: number, endTimestamp: number) => {
+    return sql`
+      SELECT * FROM ${poolPrice}
+      WHERE pool = ${poolAddress}
+      AND timestamp >= ${startTimestamp}
+      AND timestamp <= ${endTimestamp}
+    `;
+  },
+};
+
+ponder.get('/chart/price', async (c) => {
+  const { poolAddresses, startTimestamp, endTimestamp } = c.req.query();
+
+  const poolAddressesArr = poolAddresses?.split(',') ?? [];
+
+  const data = await c.db.query.poolPrice.findMany({
+    // @ts-ignore
+    where: (poolPrice, { inArray }) => inArray(poolPrice.pool, poolAddressesArr),
+  });
+
+  const dataObject: { [key: string]: any[] } = {};
+
+  // create object with poolAddress as key and data as value
+  data.forEach((data) => {
+    if (!dataObject[data.pool]) {
+      dataObject[data.pool] = [];
+    }
+
+    // @ts-ignore
+    dataObject[data.pool].push(data);
+  });
+
+  const result = replaceBigInts(dataObject, (v) => Number(v));
+
   return c.json(result);
 });

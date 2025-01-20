@@ -299,3 +299,19 @@ export const PoolRelation = relations(pool, ({ one }) => ({
     references: [Market.marketIndex],
   }),
 }));
+
+// for chart
+
+export const poolPrice = onchainTable('pool_price', (t) => ({
+  id: t.text().primaryKey(), // poolAddress-timestamp
+  pool: t.hex().notNull(), // reference pool
+  price: t.bigint().notNull(),
+  timestamp: t.bigint().notNull(),
+}));
+
+export const PoolPriceRelation = relations(poolPrice, ({ one }) => ({
+  pool: one(pool, {
+    fields: [poolPrice.pool],
+    references: [pool.id],
+  }),
+}));
