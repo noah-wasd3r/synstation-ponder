@@ -168,11 +168,11 @@ ponder.on('V3Pool:Swap', async ({ event, context }) => {
     .values({
       id: event.log.address + '-' + event.block.timestamp.toString(),
       pool: event.log.address,
-      price: prices[0] ?? 0n,
+      price: conditionPrice ?? 0n,
       timestamp: event.block.timestamp,
     })
     .onConflictDoUpdate(() => ({
-      price: prices[0] ?? 0n,
+      price: conditionPrice ?? 0n,
     }));
 });
 
