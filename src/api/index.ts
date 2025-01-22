@@ -176,14 +176,29 @@ const queries = {
 
 ponder.get('/chart/price', async (c) => {
   const { poolAddresses, startTimestamp, endTimestamp } = c.req.query();
+  let endTimestampInNumber = Number(endTimestamp);
+  if (!endTimestampInNumber) {
+    endTimestampInNumber = Date.now() / 1000;
+  }
+
+  let startTimestampInNumber = Number(startTimestamp);
+  if (!startTimestampInNumber) {
+    startTimestampInNumber = 0;
+  }
 
   const poolAddressesArr = poolAddresses?.split(',') ?? [];
 
   const data = await c.db.query.poolPrice.findMany({
-    // @ts-ignore
-    where: (poolPrice, { inArray }) => inArray(poolPrice.pool, poolAddressesArr),
+    where: (poolPrice, { inArray, and, gte, lte }) =>
+      and(
+        // @ts-ignore
+        inArray(poolPrice.pool, poolAddressesArr),
+        // @ts-ignore
+        and(gte(poolPrice.timestamp, startTimestampInNumber), lte(poolPrice.timestamp, endTimestampInNumber))
+      ),
   });
 
+  // const timestampedData = data.filter((d) => Number(d.timestamp) >= startTimestampInNumber && Number(d.timestamp) <= endTimestampInNumber);
   const dataObject: { [key: string]: any[] } = {};
 
   // create object with poolAddress as key and data as value
