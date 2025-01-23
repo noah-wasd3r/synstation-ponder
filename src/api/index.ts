@@ -2,7 +2,7 @@ import { ponder } from 'ponder:registry';
 import { Condition, conditionRedeemEvent, Market, swapEvent, UserPreStaking } from '../../ponder.schema';
 import { and, eq, graphql, inArray, index, or, replaceBigInts, sql, union } from 'ponder';
 import { numberToHex } from 'viem';
-import { account, OutcomeSwapEvent, pool, poolPrice, SwapEvent, transferEvent } from 'ponder:schema';
+import { account, OutcomeSwapEvent, pool, poolPrice, SwapEvent, transferEvent, userConditionPosition } from 'ponder:schema';
 
 ponder.use('/', graphql());
 
@@ -213,5 +213,18 @@ ponder.get('/chart/price', async (c) => {
 
   const result = replaceBigInts(dataObject, (v) => Number(v));
 
+  return c.json(result);
+});
+
+ponder.get('/user-condition-position', async (c) => {
+  let { user } = c.req.query();
+  if (!user) {
+    return c.json({ error: 'user is required' }, 400);
+  }
+  user = user.toLowerCase();
+
+  // @ts-ignore
+  const data = await c.db.select().from(userConditionPosition).where(eq(userConditionPosition.user, user));
+  const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
 });

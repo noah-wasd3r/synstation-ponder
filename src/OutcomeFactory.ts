@@ -1,7 +1,8 @@
 import { ponder } from 'ponder:registry';
-import { Condition, Market, OutcomeSwapEvent } from 'ponder:schema';
+import { Condition, Market, OutcomeSwapEvent, userConditionPosition } from 'ponder:schema';
 import { erc20Abi } from 'viem';
 import { OutcomeFactoryImplAbi } from '../abis/OutcomeFactoryImplAbi';
+import { GM } from './constants/addresses';
 
 ponder.on('OutcomeFactory:ConditionDeployed', async ({ event, context }) => {
   const symbol = await context.client.readContract({
@@ -54,6 +55,56 @@ ponder.on('OutcomeFactory:ConditionsResolved', async ({ event, context }) => {
 });
 
 ponder.on('OutcomeRouter:Swapped', async ({ event, context }) => {
+  const isBuy = event.args.from.toLowerCase() === GM[context.network.chainId].toLowerCase();
+  const conditionToken = isBuy ? event.args.to : event.args.from;
+  const loadedUserConditionPosition = await context.db.find(userConditionPosition, {
+    id: event.transaction.from + '-' + conditionToken,
+  });
+
+  const conditionPrice = isBuy
+    ? event.args.amountOut !== 0n
+      ? (event.args.amountIn * 10n ** 6n) / event.args.amountOut
+      : 0n
+    : event.args.amountIn !== 0n
+    ? (event.args.amountOut * 10n ** 6n) / event.args.amountIn
+    : 0n;
+
+  const conditionAmount = isBuy ? event.args.amountOut : event.args.amountIn;
+
+  if (!loadedUserConditionPosition) {
+    await context.db.insert(userConditionPosition).values({
+      id: event.transaction.from + '-' + conditionToken,
+      user: event.transaction.from,
+      condition: conditionToken,
+      updatedAt: event.block.timestamp,
+      purchaseRate: conditionPrice,
+      accumulatedAmount: conditionAmount,
+      closedAt: 0n,
+    });
+  } else if (isBuy) {
+    await context.db
+      .update(userConditionPosition, {
+        id: event.transaction.from + '-' + conditionToken,
+      })
+      .set((current) => ({
+        updatedAt: event.block.timestamp,
+        purchaseRate:
+          (current.purchaseRate * current.accumulatedAmount) / (current.accumulatedAmount + conditionAmount) +
+          (conditionPrice * conditionAmount) / (current.accumulatedAmount + conditionAmount),
+        accumulatedAmount: current.accumulatedAmount + conditionAmount,
+      }));
+  } else {
+    await context.db
+      .update(userConditionPosition, {
+        id: event.transaction.from + '-' + conditionToken,
+      })
+      .set((current) => ({
+        updatedAt: event.block.timestamp,
+        purchaseRate: current.purchaseRate,
+        accumulatedAmount: current.accumulatedAmount > conditionAmount ? current.accumulatedAmount - conditionAmount : 0n,
+      }));
+  }
+
   await context.db.insert(OutcomeSwapEvent).values({
     id: event.transaction.hash + '#' + event.log.logIndex.toString(),
     timestamp: event.block.timestamp,

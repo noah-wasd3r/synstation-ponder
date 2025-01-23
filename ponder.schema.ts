@@ -315,3 +315,16 @@ export const PoolPriceRelation = relations(poolPrice, ({ one }) => ({
     references: [pool.id],
   }),
 }));
+
+// for chart -end
+
+//
+export const userConditionPosition = onchainTable('user_condition_position', (t) => ({
+  id: t.text().primaryKey(), // user-condition
+  user: t.hex().notNull(),
+  condition: t.hex().notNull(),
+  updatedAt: t.bigint().notNull(),
+  purchaseRate: t.bigint().notNull(),
+  accumulatedAmount: t.bigint().notNull(),
+  closedAt: t.bigint(),
+}));
