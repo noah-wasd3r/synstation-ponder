@@ -102,6 +102,12 @@ ponder.on('OutcomeRouter:Swapped', async ({ event, context }) => {
         updatedAt: event.block.timestamp,
         purchaseRate: current.purchaseRate,
         accumulatedAmount: current.accumulatedAmount > conditionAmount ? current.accumulatedAmount - conditionAmount : 0n,
+        closedAt:
+          current.accumulatedAmount > conditionAmount
+            ? current.accumulatedAmount - conditionAmount === 0n
+              ? event.block.timestamp
+              : 0n
+            : event.block.timestamp,
       }));
   }
 
