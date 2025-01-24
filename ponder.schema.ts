@@ -323,6 +323,7 @@ export const userConditionPosition = onchainTable('user_condition_position', (t)
   id: t.text().primaryKey(), // user-condition
   user: t.hex().notNull(),
   condition: t.hex().notNull(),
+  createdAt: t.bigint().notNull(),
   updatedAt: t.bigint().notNull(),
   purchaseRate: t.bigint().notNull(),
   accumulatedAmount: t.bigint().notNull(),
