@@ -5,34 +5,34 @@ export function getPointPerSecond(token: string, network: string, amount: bigint
   if (network === 'mainnet') {
     switch (token.toLowerCase()) {
       case '0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee'.toLowerCase(): // weETH
-        return (BigInt(10) * (BigInt(3100 * 10 ** 8) * amount)) / BigInt(86400);
+        return (BigInt(3100 * 10 ** 8) * amount) / BigInt(86400);
       case '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0': // wstETH
-        return (BigInt(10) * (BigInt(3100 * 10 ** 8) * amount)) / BigInt(86400);
+        return (BigInt(3100 * 10 ** 8) * amount) / BigInt(86400);
       case '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'.toLowerCase(): // USDC
-        return (BigInt(10) * (BigInt(1 * 10 ** 8) * amount * BigInt(10 ** 12))) / BigInt(86400);
+        return (BigInt(1 * 10 ** 8) * amount * BigInt(10 ** 12)) / BigInt(86400);
       case '0xdAC17F958D2ee523a2206206994597C13D831ec7'.toLowerCase(): // USDT
-        return (BigInt(10) * (BigInt(1 * 10 ** 8) * amount * BigInt(10 ** 12))) / BigInt(86400);
+        return (BigInt(1 * 10 ** 8) * amount * BigInt(10 ** 12)) / BigInt(86400);
       case '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599'.toLowerCase(): // WBTC
-        return (BigInt(10) * (BigInt(70000 * 10 ** 8) * amount * BigInt(10 ** 10))) / BigInt(86400);
+        return (BigInt(70000 * 10 ** 8) * amount * BigInt(10 ** 10)) / BigInt(86400);
       default:
-        return BigInt(10) * BigInt(0);
+        return BigInt(0);
     }
   }
 
   if (network === 'astar') {
     switch (token.toLowerCase()) {
       case '0xAeaaf0e2c81Af264101B9129C00F4440cCF0F720'.toLowerCase(): // WASTR
-        return (BigInt(10) * (BigInt(0.05 * 10 ** 8) * amount)) / BigInt(86400);
+        return (BigInt(0.05 * 10 ** 8) * amount) / BigInt(86400);
       case '0xE511ED88575C57767BAfb72BfD10775413E3F2b0'.toLowerCase(): // nASTR
-        return (BigInt(10) * (BigInt(0.05 * 10 ** 8) * amount)) / BigInt(86400);
+        return (BigInt(0.05 * 10 ** 8) * amount) / BigInt(86400);
       case '0xC7E92Cf2c4f5bA60E926D3dB25ad9aBfA063aBd9'.toLowerCase(): // aASTR
-        return (BigInt(10) * (BigInt(0.05 * 10 ** 8) * amount)) / BigInt(86400);
+        return (BigInt(0.05 * 10 ** 8) * amount) / BigInt(86400);
       default:
-        return BigInt(10) * BigInt(0);
+        return BigInt(0);
     }
   }
 
-  return BigInt(10) * BigInt(0);
+  return BigInt(0);
 }
 
 ponder.on('PreStaking:Deposit', async ({ event, context }) => {
