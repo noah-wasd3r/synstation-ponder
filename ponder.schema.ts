@@ -3,9 +3,15 @@ import { index, onchainTable, primaryKey, relations } from 'ponder';
 export const Users = onchainTable('user', (t) => ({
   id: t.text().primaryKey(),
   creationTimestamp: t.bigint(),
-  lastTimestamp: t.bigint(),
-  totalAccumulatedPoints: t.bigint().notNull(),
-  totalPointPerSecond: t.bigint().notNull(),
+  // pre-staking
+  preStakingAccumulatedPoints: t.bigint().notNull().default(0n),
+  preStakingPointPerSecond: t.bigint().notNull(),
+  preStakingLastTimestamp: t.bigint().notNull(),
+  // portal
+  portalAccumulatedPoints: t.bigint().notNull().default(0n),
+  portalPointPerSecond: t.bigint().default(0n),
+
+  //
 }));
 
 export const UserStaking = onchainTable('user_staking', (t) => ({
@@ -207,7 +213,7 @@ export const pool = onchainTable(
 export const position = onchainTable('position', (t) => ({
   id: t.text().primaryKey(),
   owner: t.hex().notNull(),
-  pool: t.hex().notNull(),
+  pool: t.text().notNull(),
   token0: t.hex().notNull(),
   token1: t.hex().notNull(),
   tickLower: t.bigint().notNull(),
@@ -292,12 +298,18 @@ export const ConditionRelation = relations(Condition, ({ one }) => ({
     references: [Market.marketIndex],
   }),
 }));
-
-export const PoolRelation = relations(pool, ({ one }) => ({
+export const PositionRelation = relations(position, ({ one }) => ({
+  pool: one(pool, {
+    fields: [position.pool],
+    references: [pool.id],
+  }),
+}));
+export const PoolRelation = relations(pool, ({ one, many }) => ({
   market: one(Market, {
     fields: [pool.marketIndex],
     references: [Market.marketIndex],
   }),
+  positions: many(position),
 }));
 
 // for chart

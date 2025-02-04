@@ -67,14 +67,14 @@ ponder.on('Staking:Staked', async ({ event, context }) => {
     .values({
       id: event.args.user.toString(),
       creationTimestamp: event.block.timestamp,
-      lastTimestamp: event.block.timestamp,
-      totalAccumulatedPoints: BigInt(0),
-      totalPointPerSecond: getPointPerSecond(event.args.wrappedToken.toString(), context.network.name, event.args.wrappedAmount),
+      preStakingLastTimestamp: event.block.timestamp,
+      preStakingAccumulatedPoints: BigInt(0),
+      preStakingPointPerSecond: getPointPerSecond(event.args.wrappedToken.toString(), context.network.name, event.args.wrappedAmount),
     })
     .onConflictDoUpdate((current) => ({
-      lastTimestamp: event.block.timestamp,
-      totalAccumulatedPoints: current.totalAccumulatedPoints + accumulatedPoints,
-      totalPointPerSecond: current.totalPointPerSecond + userStaking.pointPerSecond - prevPointPerSecond,
+      preStakingLastTimestamp: event.block.timestamp,
+      preStakingAccumulatedPoints: current.preStakingAccumulatedPoints + accumulatedPoints,
+      preStakingPointPerSecond: current.preStakingPointPerSecond + userStaking.pointPerSecond - prevPointPerSecond,
     }));
 
   await context.db.insert(PreStaking).values({
@@ -142,9 +142,9 @@ ponder.on('Staking:Unstaked', async ({ event, context }) => {
       id: event.args.user.toString(),
     })
     .set((current) => ({
-      lastTimestamp: event.block.timestamp,
-      totalAccumulatedPoints: current.totalAccumulatedPoints + accumulatedPoints,
-      totalPointPerSecond: current.totalPointPerSecond - prevPointPerSecond,
+      preStakingLastTimestamp: event.block.timestamp,
+      preStakingAccumulatedPoints: current.preStakingAccumulatedPoints + accumulatedPoints,
+      preStakingPointPerSecond: current.preStakingPointPerSecond - prevPointPerSecond,
     }));
 
   // const user = await User.update({

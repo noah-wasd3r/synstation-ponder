@@ -1,8 +1,18 @@
 import { ponder } from 'ponder:registry';
 import { Condition, conditionRedeemEvent, Market, swapEvent, UserPreStaking } from '../../ponder.schema';
 import { and, eq, graphql, inArray, index, or, replaceBigInts, sql, union } from 'ponder';
-import { numberToHex } from 'viem';
-import { account, OutcomeSwapEvent, pool, poolPrice, SwapEvent, transferEvent, userConditionPosition } from 'ponder:schema';
+import { checksumAddress, numberToHex } from 'viem';
+import {
+  account,
+  OutcomeSwapEvent,
+  pool,
+  poolPrice,
+  position,
+  SwapEvent,
+  transferEvent,
+  userConditionPosition,
+  Users,
+} from 'ponder:schema';
 
 ponder.use('/', graphql());
 
@@ -119,6 +129,12 @@ ponder.get('/conditions', async (c) => {
   return c.json(result);
 });
 
+ponder.get('/positions', async (c) => {
+  const data = await c.db.select().from(position);
+  const result = replaceBigInts(data, (v) => Number(v));
+  return c.json(result);
+});
+
 ponder.get('/markets', async (c) => {
   const { page, pageSize, marketIndex } = c.req.query();
 
@@ -129,7 +145,11 @@ ponder.get('/markets', async (c) => {
       offset: (Number(page) - 1) * Number(pageSize),
       with: {
         conditions: true,
-        pools: true,
+        pools: {
+          with: {
+            positions: true,
+          },
+        },
       },
     });
 
@@ -140,7 +160,11 @@ ponder.get('/markets', async (c) => {
       where: (market, { eq }) => eq(market.marketIndex, marketIndex),
       with: {
         conditions: true,
-        pools: true,
+        pools: {
+          with: {
+            positions: true,
+          },
+        },
       },
     });
 
@@ -148,31 +172,6 @@ ponder.get('/markets', async (c) => {
     return c.json(result);
   }
 });
-
-ponder.get('/v3-swap-events', async (c) => {
-  const data = await c.db.select().from(SwapEvent);
-  const result = replaceBigInts(data, (v) => Number(v));
-  return c.json(result);
-});
-
-ponder.get('/outcome-swap-events', async (c) => {
-  const data = await c.db.select().from(OutcomeSwapEvent);
-  const result = replaceBigInts(data, (v) => Number(v));
-  return c.json(result);
-});
-
-// for chart
-
-const queries = {
-  getPriceChartData: (poolAddress: string, startTimestamp: number, endTimestamp: number) => {
-    return sql`
-      SELECT * FROM ${poolPrice}
-      WHERE pool = ${poolAddress}
-      AND timestamp >= ${startTimestamp}
-      AND timestamp <= ${endTimestamp}
-    `;
-  },
-};
 
 ponder.get('/chart/price', async (c) => {
   const { poolAddresses, startTimestamp, endTimestamp } = c.req.query();
@@ -227,4 +226,41 @@ ponder.get('/user-condition-position', async (c) => {
   const data = await c.db.select().from(userConditionPosition).where(eq(userConditionPosition.user, user));
   const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
+});
+
+//
+
+ponder.get('/point', async (c) => {
+  let { user } = c.req.query();
+  if (!user) {
+    return c.json({ error: 'user is required' }, 400);
+  }
+  user = checksumAddress(user as `0x${string}`);
+
+  const data = await c.db.select().from(Users).where(eq(Users.id, user));
+
+  const userData = data[0];
+
+  if (!userData) {
+    return c.json({ error: 'user not found' }, 400);
+  }
+
+  // handle preStaking (endTimestamp)
+  // preStakingPoint = preStakingPointPerSecond * (endTimestamp - preStakingLastTimestamp) + preStakingAccumulatedPoints
+  const preStakingEndTimestamp = 1736747999n; // 1/13/2025 11:59:59 PM UTC
+  const preStakingPoint =
+    userData.preStakingPointPerSecond * (preStakingEndTimestamp - userData.preStakingLastTimestamp) + userData.preStakingAccumulatedPoints;
+
+  // handle portal (endTimestamp)
+  // portalPoint = portalPointPerSecond * (endTimestamp - portalLastTimestamp) + portalAccumulatedPoints
+  // const portalPoint = userData.portalPointPerSecond * (endTimestamp - userData.portalLastTimestamp) + userData.portalAccumulatedPoints;
+
+  const result = {
+    preStakingPoint,
+    // portalPoint,
+  };
+
+  const response = replaceBigInts(result, (v) => Number(v));
+
+  return c.json(response);
 });
