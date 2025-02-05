@@ -1,18 +1,8 @@
 import { ponder } from 'ponder:registry';
-import { Condition, conditionRedeemEvent, Market, swapEvent, UserPreStaking } from '../../ponder.schema';
+import { Condition, conditionRedeemEvent, Market, UserPreStaking } from '../../ponder.schema';
 import { and, eq, graphql, inArray, index, or, replaceBigInts, sql, union } from 'ponder';
 import { checksumAddress, numberToHex } from 'viem';
-import {
-  account,
-  OutcomeSwapEvent,
-  pool,
-  poolPrice,
-  position,
-  SwapEvent,
-  transferEvent,
-  userConditionPosition,
-  Users,
-} from 'ponder:schema';
+import { account, OutcomeSwapEvent, pool, poolPrice, position, userConditionPosition, Users } from 'ponder:schema';
 
 ponder.use('/', graphql());
 
@@ -23,75 +13,30 @@ ponder.get('/user-pre-staking', async (c) => {
   return c.json(result);
 });
 
-ponder.get('/get-purchase-rate', async (c) => {
-  let { user, conditions } = c.req.query();
+ponder.get('/user-positions', async (c) => {
+  let { user } = c.req.query();
 
   if (!user) {
     return c.json({ error: 'user is required' }, 400);
   }
 
-  if (!conditions) {
-    return c.json({ error: 'conditions is required' }, 400);
-  }
+  user = user.toLowerCase() as `0x${string}`;
 
-  user = user.toLowerCase();
-
-  // conditions split by comma
-  const conditionsArr = conditions.split(',').map((c) => c.toLowerCase());
-
-  // get all swap events for all conditions
-
-  const swapEvents = await c.db
-    .select()
-    .from(swapEvent)
+  const data = await c.db.query.userConditionPosition.findMany({
     // @ts-ignore
-    .where(and(eq(swapEvent.recipient, user), or(inArray(swapEvent.fromToken, conditionsArr), inArray(swapEvent.toToken, conditionsArr))));
+    where: (userConditionPosition, { eq }) => eq(userConditionPosition.user, user),
+    with: {
+      condition: {
+        with: {
+          market: true,
+        },
+      },
+    },
+  });
 
-  const conditionToRate: {
-    [key: string]: {
-      totalConditionAmount: number;
-      totalCollateralAmount: number;
-      events: {
-        id: string;
-        fromToken: string;
-        toToken: string;
-        fromAmount: bigint;
-        toAmount: bigint;
-        recipient: string;
-        timestamp: bigint;
-      }[];
-      rate: number;
-    };
-  } = {};
+  const result = replaceBigInts(data, (v) => Number(v));
 
-  for (const conditionAddress of conditionsArr) {
-    const conditionSwapEvents = swapEvents.filter((se) => se.fromToken === conditionAddress || se.toToken === conditionAddress);
-
-    let totalConditionAmount = 0;
-    let totalCollateralAmount = 0;
-
-    conditionSwapEvents.forEach((se) => {
-      // if fromToken is the condition token, then we are selling the condition token
-      if (se.fromToken === conditionAddress) {
-        totalConditionAmount += Number(se.fromAmount);
-        totalCollateralAmount += Number(se.toAmount);
-      } else if (
-        // if toToken is the condition token, then we are buying the condition token
-        se.toToken === conditionAddress
-      ) {
-        totalCollateralAmount += Number(se.toAmount);
-        totalConditionAmount += Number(se.fromAmount);
-      }
-    });
-    conditionToRate[conditionAddress] = {
-      totalConditionAmount,
-      totalCollateralAmount,
-      rate: totalConditionAmount / totalCollateralAmount,
-
-      events: conditionSwapEvents,
-    };
-  }
-  return c.json(replaceBigInts(conditionToRate, (v) => Number(v)));
+  return c.json(result);
 });
 
 ponder.get('/history', async (c) => {
@@ -212,19 +157,6 @@ ponder.get('/chart/price', async (c) => {
 
   const result = replaceBigInts(dataObject, (v) => Number(v));
 
-  return c.json(result);
-});
-
-ponder.get('/user-condition-position', async (c) => {
-  let { user } = c.req.query();
-  if (!user) {
-    return c.json({ error: 'user is required' }, 400);
-  }
-  user = user.toLowerCase();
-
-  // @ts-ignore
-  const data = await c.db.select().from(userConditionPosition).where(eq(userConditionPosition.user, user));
-  const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
 });
 

@@ -72,22 +72,6 @@ export const conditionRedeemEvent = onchainTable(
   })
 );
 
-export const swapEvent = onchainTable(
-  'swap_event',
-  (t) => ({
-    id: t.text().primaryKey(), // txHash-chainId
-    fromToken: t.hex().notNull(),
-    toToken: t.hex().notNull(),
-    fromAmount: t.bigint().notNull(),
-    toAmount: t.bigint().notNull(),
-    recipient: t.hex().notNull(),
-    timestamp: t.bigint().notNull(),
-  }),
-  (table) => ({
-    userIdx: index().on(table.recipient),
-  })
-);
-
 // export const userCondition;
 
 // OutcomeToken
@@ -340,4 +324,17 @@ export const userConditionPosition = onchainTable('user_condition_position', (t)
   purchaseRate: t.bigint().notNull(),
   accumulatedAmount: t.bigint().notNull(),
   closedAt: t.bigint(),
+
+  marketIndex: t.text().notNull(),
+
+  buyInGm: t.bigint().notNull(),
+  sellInGm: t.bigint().notNull(),
+  redeemInGm: t.bigint().notNull(),
+}));
+
+export const UserConditionPositionRelation = relations(userConditionPosition, ({ one }) => ({
+  condition: one(Condition, {
+    fields: [userConditionPosition.condition],
+    references: [Condition.address],
+  }),
 }));
