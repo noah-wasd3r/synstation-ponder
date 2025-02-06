@@ -101,39 +101,106 @@ ponder.get('/positions', async (c) => {
 ponder.get('/markets', async (c) => {
   const { page, pageSize, marketIndex } = c.req.query();
 
+  let markets;
+
+  const options = {
+    columns: {
+      id: true,
+      marketIndex: true,
+      collateralToken: true,
+      isResolved: true,
+      createdAt: true,
+      resolvedAt: true,
+    },
+    with: {
+      conditions: {
+        columns: {
+          address: true,
+          symbol: true,
+        },
+      },
+      pools: {
+        columns: {
+          id: true,
+          createdAtTimestamp: true,
+          token0: true,
+          token1: true,
+          feeTier: true,
+          token0Price: true,
+          token1Price: true,
+          volumeToken0: true,
+          volumeToken1: true,
+          txCount: true,
+          totalValueLockedToken0: true,
+          totalValueLockedToken1: true,
+          liquidityProviderCount: true,
+          conditionPrice: true,
+        },
+        with: {
+          positions: {
+            columns: {
+              id: true,
+              owner: true,
+              liquidity: true,
+            },
+          },
+        },
+      },
+    },
+  };
   if (!marketIndex) {
-    const markets = await c.db.query.Market.findMany({
+    markets = await c.db.query.Market.findMany({
       orderBy: (market, { desc }) => [desc(market.createdAt)],
       limit: Number(pageSize),
       offset: (Number(page) - 1) * Number(pageSize),
-      with: {
-        conditions: true,
-        pools: {
-          with: {
-            positions: true,
-          },
-        },
-      },
+      ...options,
     });
-
-    const result = replaceBigInts(markets, (v) => Number(v));
-    return c.json(result);
   } else {
-    const markets = await c.db.query.Market.findMany({
+    markets = await c.db.query.Market.findMany({
       where: (market, { eq }) => eq(market.marketIndex, marketIndex),
-      with: {
-        conditions: true,
-        pools: {
-          with: {
-            positions: true,
-          },
-        },
-      },
+      ...options,
+    });
+  }
+
+  // find matching pool and condition token, add conditionPrice
+
+  let marketVolumeInGM = 0n;
+  let marketTotalValueLockedInGM = 0n;
+
+  markets = markets.map((market) => {
+    const newConditionsArray = market.conditions.map((condition: any) => {
+      const pool = market.pools.find((pool: any) => pool.token0 === condition.address || pool.token1 === condition.address) as any;
+
+      const isConditionToken0 = pool?.token0 === condition.address;
+      const isConditionToken1 = pool?.token1 === condition.address;
+      if (isConditionToken0) {
+        // @ts-ignore
+        marketVolumeInGM += ((pool?.volumeToken0 ?? 0n) * pool.conditionPrice) / 10n ** 6n;
+        // @ts-ignore
+        marketTotalValueLockedInGM += ((pool?.totalValueLockedToken0 ?? 0n) * pool.conditionPrice) / 10n ** 6n;
+        marketVolumeInGM += pool?.volumeToken1 ?? 0n;
+        marketTotalValueLockedInGM += pool?.totalValueLockedToken1 ?? 0n;
+      }
+      if (isConditionToken1) {
+        // @ts-ignore
+        marketVolumeInGM += ((pool?.volumeToken1 ?? 0n) * pool.conditionPrice) / 10n ** 6n;
+        // @ts-ignore
+        marketTotalValueLockedInGM += ((pool?.totalValueLockedToken1 ?? 0n) * pool.conditionPrice) / 10n ** 6n;
+        marketVolumeInGM += pool?.volumeToken0 ?? 0n;
+        marketTotalValueLockedInGM += pool?.totalValueLockedToken0 ?? 0n;
+      }
+
+      if (pool) {
+        return { ...condition, conditionPrice: pool.conditionPrice };
+      }
+      return condition;
     });
 
-    const result = replaceBigInts(markets, (v) => Number(v));
-    return c.json(result);
-  }
+    return { ...market, conditions: newConditionsArray, totalVolume: marketVolumeInGM, totalValueLocked: marketTotalValueLockedInGM };
+  });
+
+  const result = replaceBigInts(markets, (v) => Number(v));
+  return c.json(result);
 });
 
 ponder.get('/chart/price', async (c) => {
