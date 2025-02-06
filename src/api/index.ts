@@ -13,8 +13,14 @@ ponder.get('/user-pre-staking', async (c) => {
   return c.json(result);
 });
 
+ponder.get('/test', async (c) => {
+  const data = await c.db.select().from(OutcomeSwapEvent);
+  const result = replaceBigInts(data, (v) => Number(v));
+  return c.json(result);
+});
+
 ponder.get('/user-positions', async (c) => {
-  let { user } = c.req.query();
+  let { user, resolved } = c.req.query();
 
   if (!user) {
     return c.json({ error: 'user is required' }, 400);
@@ -22,7 +28,7 @@ ponder.get('/user-positions', async (c) => {
 
   user = user.toLowerCase() as `0x${string}`;
 
-  const data = await c.db.query.userConditionPosition.findMany({
+  let data = await c.db.query.userConditionPosition.findMany({
     // @ts-ignore
     where: (userConditionPosition, { eq }) => eq(userConditionPosition.user, user),
     with: {
@@ -33,6 +39,14 @@ ponder.get('/user-positions', async (c) => {
       },
     },
   });
+
+  if (resolved === 'true') {
+    data = data.filter((v) => v.condition.market.isResolved);
+  }
+
+  if (resolved === 'false') {
+    data = data.filter((v) => !v.condition.market.isResolved);
+  }
 
   const result = replaceBigInts(data, (v) => Number(v));
 
@@ -68,7 +82,11 @@ ponder.get('/pools', async (c) => {
 });
 
 ponder.get('/conditions', async (c) => {
-  const account = await c.db.select().from(Condition);
+  const account = await c.db.query.Condition.findMany({
+    with: {
+      market: true,
+    },
+  });
 
   const result = replaceBigInts(account, (v) => Number(v));
   return c.json(result);

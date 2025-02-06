@@ -36,22 +36,22 @@ export default createConfig({
     PreStaking: {
       abi: PreStakingAbi,
       network: {
-        // astar: {
-        //   address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
-        //   startBlock: 7291207,
-        // },
-        // mainnet: {
-        //   address: '0x3BaC111A6F5ED6A554616373d5c7D858d7c10d88',
-        //   startBlock: 20975761,
-        // },
+        astar: {
+          address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
+          startBlock: 7291207,
+        },
+        mainnet: {
+          address: '0x3BaC111A6F5ED6A554616373d5c7D858d7c10d88',
+          startBlock: 20975761,
+        },
       },
     },
     Staking: {
       network: {
-        // mainnet: {
-        //   address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
-        //   startBlock: 20623833,
-        // },
+        mainnet: {
+          address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
+          startBlock: 20623833,
+        },
       },
       abi: StakingAbi,
     },
@@ -99,12 +99,12 @@ export default createConfig({
         },
       },
     },
+    // TODO: include call trace 해서, 이전에 swap event 없던 애들은 calltrace arg로 처리해야할듯?
     OutcomeRouter: {
       abi: OutcomeRouterAbi,
       network: {
         soneium: {
           address: '0x1ccAA0C6448CCd836A09f62B1C0b2Df76f910424',
-
           startBlock: 1849376,
         },
       },
