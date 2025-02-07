@@ -82,7 +82,9 @@ ponder.get('/pools', async (c) => {
 });
 
 ponder.get('/conditions', async (c) => {
+  const { marketIndex } = c.req.query();
   const account = await c.db.query.Condition.findMany({
+    where: (condition, { eq }) => (marketIndex ? eq(condition.marketIndex, marketIndex) : undefined),
     with: {
       market: true,
     },
@@ -111,6 +113,7 @@ ponder.get('/markets', async (c) => {
       isResolved: true,
       createdAt: true,
       resolvedAt: true,
+      title: true,
     },
     with: {
       conditions: {
@@ -164,10 +167,13 @@ ponder.get('/markets', async (c) => {
 
   // find matching pool and condition token, add conditionPrice
 
-  let marketVolumeInGM = 0n;
-  let marketTotalValueLockedInGM = 0n;
-
   markets = markets.map((market) => {
+    let marketVolumeInGM = 0n;
+    let marketTotalValueLockedInGM = 0n;
+
+    // @ts-ignore
+    const feeTier = market.pools?.[0]?.feeTier ?? 10000;
+
     const newConditionsArray = market.conditions.map((condition: any) => {
       const pool = market.pools.find((pool: any) => pool.token0 === condition.address || pool.token1 === condition.address) as any;
 
@@ -196,7 +202,13 @@ ponder.get('/markets', async (c) => {
       return condition;
     });
 
-    return { ...market, conditions: newConditionsArray, totalVolume: marketVolumeInGM, totalValueLocked: marketTotalValueLockedInGM };
+    return {
+      ...market,
+      conditions: newConditionsArray,
+      totalVolume: marketVolumeInGM,
+      totalValueLocked: marketTotalValueLockedInGM,
+      feeTier,
+    };
   });
 
   const result = replaceBigInts(markets, (v) => Number(v));
