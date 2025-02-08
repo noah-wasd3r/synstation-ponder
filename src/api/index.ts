@@ -53,7 +53,7 @@ ponder.get('/user-positions', async (c) => {
   return c.json(result);
 });
 
-ponder.get('/history', async (c) => {
+ponder.get('/redeem-history', async (c) => {
   let { user } = c.req.query();
   if (!user) {
     return c.json({ error: 'user is required' }, 400);
@@ -61,17 +61,13 @@ ponder.get('/history', async (c) => {
   user = user.toLowerCase();
 
   // @ts-ignore
-  const swapQuery = (await c.db.select().from(swapEvent).where(eq(swapEvent.recipient, user))).map((v) => ({ ...v, type: 'swap' }));
-  // @ts-ignore
   const redeemQuery = (await c.db.select().from(conditionRedeemEvent).where(eq(conditionRedeemEvent.userAddress, user))).map((v) => ({
     ...v,
     type: 'redeem',
   }));
-  // const data = await union(swapQuery, redeemQuery);
 
-  const result = replaceBigInts([...swapQuery, ...redeemQuery], (v) => Number(v));
+  const result = replaceBigInts([...redeemQuery], (v) => Number(v));
 
-  // const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
 });
 
