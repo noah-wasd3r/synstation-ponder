@@ -1,6 +1,6 @@
 import { ponder } from 'ponder:registry';
 import { Condition, conditionRedeemEvent, Market, UserPreStaking } from '../../ponder.schema';
-import { and, eq, graphql, inArray, index, or, replaceBigInts, sql, union } from 'ponder';
+import { and, eq, graphql, gte, inArray, index, lte, or, replaceBigInts, sql, union } from 'ponder';
 import { checksumAddress, numberToHex } from 'viem';
 import { account, OutcomeSwapEvent, pool, poolPrice, position, userConditionPosition, Users } from 'ponder:schema';
 
@@ -15,6 +15,17 @@ ponder.get('/user-pre-staking', async (c) => {
 
 ponder.get('/test', async (c) => {
   const data = await c.db.select().from(OutcomeSwapEvent);
+  const result = replaceBigInts(data, (v) => Number(v));
+  return c.json(result);
+});
+
+ponder.get('/swap-history', async (c) => {
+  const { fromTimestamp, toTimestamp } = c.req.query();
+  const data = await c.db
+    .select()
+    .from(OutcomeSwapEvent)
+    // @ts-ignore
+    .where(and(gte(OutcomeSwapEvent.timestamp, fromTimestamp), lte(OutcomeSwapEvent.timestamp, toTimestamp)));
   const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
 });
