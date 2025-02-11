@@ -44,6 +44,7 @@ ponder.on('OutcomeFactory:ConditionDeployed', async ({ event, context }) => {
 });
 
 ponder.on('OutcomeFactory:ConditionsResolved', async ({ event, context }) => {
+  const distributions = event.args.distributionHint.map((v) => v);
   const loadedMarket = await context.db
     .update(Market, {
       id: event.args.idx.toString(),
@@ -51,6 +52,7 @@ ponder.on('OutcomeFactory:ConditionsResolved', async ({ event, context }) => {
     .set({
       isResolved: true,
       resolvedAt: event.block.timestamp,
+      disitributions: distributions,
     });
 });
 
@@ -161,4 +163,6 @@ ponder.on('OutcomeRouter:Swapped', async ({ event, context }) => {
     amountIn: event.args.amountIn,
     amountOut: event.args.amountOut,
   });
+
+  // TODO: for point calculation
 });

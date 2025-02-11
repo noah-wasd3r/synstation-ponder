@@ -20,3 +20,5 @@ yarn-error.log*
 
 # Point calc
 point-calc.ts
+volume-calc.ts
+userVolume.json 

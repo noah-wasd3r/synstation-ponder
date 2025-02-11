@@ -227,6 +227,8 @@ export const Market = onchainTable('market', (t) => ({
 
   createdAt: t.bigint().notNull(),
   resolvedAt: t.bigint(),
+
+  disitributions: t.bigint().array(),
 }));
 
 export const SwapEvent = onchainTable(
