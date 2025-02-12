@@ -72,8 +72,7 @@ ponder.get('/redeem-history', async (c) => {
   user = user.toLowerCase();
 
   const redeemQuery = await c.db.query.conditionRedeemEvent.findMany({
-    where: (conditionRedeemEvent, { eq, and, gt }) =>
-      and(eq(conditionRedeemEvent.userAddress, user as `0x${string}`), gt(conditionRedeemEvent.conditionAmount, 0n)),
+    where: (conditionRedeemEvent, { eq }) => eq(conditionRedeemEvent.userAddress, user as `0x${string}`),
     with: {
       condition: {
         with: {
@@ -82,8 +81,9 @@ ponder.get('/redeem-history', async (c) => {
       },
     },
   });
+  const onlyPositiveRedeem = redeemQuery.filter((v) => v.conditionAmount > 0n);
 
-  const result = replaceBigInts([...redeemQuery], (v) => Number(v));
+  const result = replaceBigInts([...onlyPositiveRedeem], (v) => Number(v));
 
   return c.json(result);
 });
