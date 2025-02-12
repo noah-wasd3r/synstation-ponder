@@ -71,11 +71,16 @@ ponder.get('/redeem-history', async (c) => {
   }
   user = user.toLowerCase();
 
-  // @ts-ignore
-  const redeemQuery = (await c.db.select().from(conditionRedeemEvent).where(eq(conditionRedeemEvent.userAddress, user))).map((v) => ({
-    ...v,
-    type: 'redeem',
-  }));
+  const redeemQuery = await c.db.query.conditionRedeemEvent.findMany({
+    where: (conditionRedeemEvent, { eq }) => eq(conditionRedeemEvent.userAddress, user),
+    with: {
+      condition: {
+        with: {
+          market: true,
+        },
+      },
+    },
+  });
 
   const result = replaceBigInts([...redeemQuery], (v) => Number(v));
 

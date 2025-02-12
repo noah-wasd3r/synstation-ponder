@@ -298,6 +298,13 @@ export const PoolRelation = relations(pool, ({ one, many }) => ({
   positions: many(position),
 }));
 
+export const RedeemEventRelation = relations(conditionRedeemEvent, ({ one }) => ({
+  condition: one(Condition, {
+    fields: [conditionRedeemEvent.conditionAddress],
+    references: [Condition.address],
+  }),
+}));
+
 // for chart
 
 export const poolPrice = onchainTable('pool_price', (t) => ({
