@@ -58,7 +58,7 @@ ponder.on('OutcomeFactory:ConditionsResolved', async ({ event, context }) => {
 
 ponder.on('OutcomeFactory:ConditionsRedeemed', async ({ event, context }) => {
   await context.db.insert(conditionRedeemEvent).values({
-    id: event.transaction.from + '-' + event.args.idx.toString(),
+    id: event.transaction.from + '-' + event.args.idx.toString() + '-' + event.log.logIndex.toString(),
     marketIndex: event.args.idx.toString(),
     conditionAddress: event.args.condition,
     userAddress: event.transaction.from,
