@@ -72,7 +72,8 @@ ponder.get('/redeem-history', async (c) => {
   user = user.toLowerCase();
 
   const redeemQuery = await c.db.query.conditionRedeemEvent.findMany({
-    where: (conditionRedeemEvent, { eq }) => eq(conditionRedeemEvent.userAddress, user),
+    where: (conditionRedeemEvent, { eq, and, gt }) =>
+      and(eq(conditionRedeemEvent.userAddress, user as `0x${string}`), gt(conditionRedeemEvent.conditionAmount, 0n)),
     with: {
       condition: {
         with: {
