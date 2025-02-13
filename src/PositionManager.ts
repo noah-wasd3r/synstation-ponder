@@ -1,4 +1,4 @@
-import { factory, pool, Condition, SwapEvent, poolPrice, position } from 'ponder:schema';
+import { factory, pool, Condition, poolPrice, position } from 'ponder:schema';
 
 import { ponder } from 'ponder:registry';
 import { sqrtPriceX96ToTokenPrices } from './utils/pricing';

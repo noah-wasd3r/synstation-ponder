@@ -1,6 +1,6 @@
 import { ponder } from 'ponder:registry';
 import { Condition, conditionRedeemEvent, Market, UserPreStaking } from '../../ponder.schema';
-import { and, eq, graphql, gte, inArray, index, lte, or, replaceBigInts, sql, union } from 'ponder';
+import { and, desc, eq, graphql, gte, inArray, index, lte, or, replaceBigInts, sql, union } from 'ponder';
 import { checksumAddress, numberToHex } from 'viem';
 import { account, OutcomeSwapEvent, pool, poolPrice, position, userConditionPosition, Users } from 'ponder:schema';
 
@@ -14,7 +14,7 @@ ponder.get('/user-pre-staking', async (c) => {
 });
 
 ponder.get('/test', async (c) => {
-  const data = await c.db.select().from(OutcomeSwapEvent);
+  const data = await c.db.select().from(OutcomeSwapEvent).orderBy(desc(OutcomeSwapEvent.timestamp));
   const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
 });
@@ -305,4 +305,32 @@ ponder.get('/point', async (c) => {
   const response = replaceBigInts(result, (v) => Number(v));
 
   return c.json(response);
+});
+
+ponder.get('/galxe-astar-more-than-100-timestamp-1739923200', async (c) => {
+  const { address } = c.req.query();
+  const startTimestamp = 1739923200n; // 2/19/2025 00:00:00 UTC
+  // const startTimestamp = 1739417002n;
+
+  const fromToken = '0x2cae934a1e84f693fbb78ca5ed3b0a6893259441'; // astar
+  if (!address) {
+    return c.json({ error: 'address is required' }, 400);
+  }
+  const data = await c.db
+    .select()
+    .from(OutcomeSwapEvent)
+    // @ts-ignore
+    .where(
+      and(
+        gte(OutcomeSwapEvent.timestamp, startTimestamp),
+        eq(OutcomeSwapEvent.txSender, address.toLowerCase() as `0x${string}`),
+        eq(OutcomeSwapEvent.fromToken, fromToken)
+      )
+    );
+
+  const totalAmountFromToken = data.reduce((acc, curr) => acc + Number(curr.amountIn), 0);
+
+  const result = totalAmountFromToken >= 100e18 ? 1 : 0;
+
+  return c.json(result);
 });

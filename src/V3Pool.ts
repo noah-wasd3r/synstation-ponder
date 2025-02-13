@@ -1,4 +1,4 @@
-import { factory, pool, Condition, SwapEvent, poolPrice } from 'ponder:schema';
+import { factory, pool, Condition, poolPrice } from 'ponder:schema';
 
 import { ponder } from 'ponder:registry';
 import { sqrtPriceX96ToTokenPrices } from './utils/pricing';
@@ -149,18 +149,6 @@ ponder.on('V3Pool:Swap', async ({ event, context }) => {
       token1Price: prices[1],
       conditionPrice: conditionPrice,
     }));
-
-  await context.db.insert(SwapEvent).values({
-    id: event.transaction.hash + '#' + updatedPool.txCount.toString() + '#' + event.log.logIndex.toString(),
-    timestamp: event.block.timestamp,
-    fromToken: loadedPool.token0,
-    toToken: loadedPool.token1,
-    txSender: event.transaction.from,
-    pool: event.log.address,
-    marketIndex: loadedPool.marketIndex,
-    amountIn: event.args.amount0,
-    amountOut: event.args.amount1,
-  });
 
   // for chart
   await context.db

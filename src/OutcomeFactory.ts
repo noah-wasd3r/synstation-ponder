@@ -161,8 +161,22 @@ ponder.on('OutcomeRouter:Swapped', async ({ event, context }) => {
     toToken: event.args.to,
     txSender: event.transaction.from,
     amountIn: event.args.amountIn,
+    amountInGm: isBuy ? event.args.amountIn : event.args.amountOut,
     amountOut: event.args.amountOut,
   });
 
   // TODO: for point calculation
+});
+
+ponder.on('OutcomeRouter:TokenSwapped', async ({ event, context }) => {
+  await context.db.insert(OutcomeSwapEvent).values({
+    id: event.transaction.hash + '#' + event.log.logIndex.toString(),
+    timestamp: event.block.timestamp,
+    fromToken: event.args.fromToken,
+    toToken: event.args.toToken,
+    txSender: event.transaction.from,
+    amountIn: event.args.amountIn,
+    amountInGm: event.args.amountInGm,
+    amountOut: event.args.amountOut,
+  });
 });

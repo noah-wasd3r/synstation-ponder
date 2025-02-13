@@ -231,25 +231,6 @@ export const Market = onchainTable('market', (t) => ({
   disitributions: t.bigint().array(),
 }));
 
-export const SwapEvent = onchainTable(
-  'swap_event',
-  (t) => ({
-    id: t.text().primaryKey(), // txHash+'#' + index in swaps tx array
-    timestamp: t.bigint().notNull(),
-    fromToken: t.hex().notNull(),
-    toToken: t.hex().notNull(),
-    txSender: t.hex().notNull(),
-    pool: t.hex().notNull(),
-    marketIndex: t.text().notNull(),
-    amountIn: t.bigint().notNull(),
-    amountOut: t.bigint().notNull(),
-  }),
-  (table) => ({
-    txSenderIdx: index('tx_sender_idx').on(table.txSender),
-    marketIndexIdx: index('market_index_idx').on(table.marketIndex),
-  })
-);
-
 export const OutcomeSwapEvent = onchainTable('outcome_swap_event', (t) => ({
   id: t.text().primaryKey(),
   timestamp: t.bigint().notNull(),
@@ -257,6 +238,7 @@ export const OutcomeSwapEvent = onchainTable('outcome_swap_event', (t) => ({
   toToken: t.hex().notNull(),
   txSender: t.hex().notNull(),
   amountIn: t.bigint().notNull(),
+  amountInGm: t.bigint().notNull(),
   amountOut: t.bigint().notNull(),
 }));
 
