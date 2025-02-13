@@ -334,3 +334,30 @@ ponder.get('/galxe-astar-more-than-100-timestamp-1739923200', async (c) => {
 
   return c.json(result);
 });
+
+ponder.get('/galxe-usdc-more-than-10-timestamp-1739750400', async (c) => {
+  const { address } = c.req.query();
+  const startTimestamp = 1739750400n; // 2/17/2025 00:00:00 UTC
+
+  const fromToken = '0xba9986d2381edf1da03b0b9c1f8b00dc4aacc369'; // USDC
+  if (!address) {
+    return c.json({ error: 'address is required' }, 400);
+  }
+  const data = await c.db
+    .select()
+    .from(OutcomeSwapEvent)
+    // @ts-ignore
+    .where(
+      and(
+        gte(OutcomeSwapEvent.timestamp, startTimestamp),
+        eq(OutcomeSwapEvent.txSender, address.toLowerCase() as `0x${string}`),
+        eq(OutcomeSwapEvent.fromToken, fromToken)
+      )
+    );
+
+  const totalAmountFromToken = data.reduce((acc, curr) => acc + Number(curr.amountIn), 0);
+
+  const result = totalAmountFromToken >= 10e6 ? 1 : 0;
+
+  return c.json(result);
+});
