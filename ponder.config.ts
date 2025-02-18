@@ -11,6 +11,7 @@ import { OutcomeRouterAbi } from './abis/OutcomeRouterAbi';
 import { PancakeV3FactoryAbi } from './abis/PancakeV3FactoryAbi';
 import { NonfungiblePositionManagerAbi } from './abis/NonfungiblePositionManagerAbi';
 import { PancakeV3PoolAbi } from './abis/PancakeV3PoolAbi';
+import { erc4626Abi } from './abis/ERC4626Abi';
 export default createConfig({
   networks: {
     mainnet: {
@@ -36,25 +37,25 @@ export default createConfig({
     PreStaking: {
       abi: PreStakingAbi,
       network: {
-        // astar: {
-        //   address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
-        //   startBlock: 7291207,
-        //   endBlock: 7873955,
-        // },
-        // mainnet: {
-        //   address: '0x3BaC111A6F5ED6A554616373d5c7D858d7c10d88',
-        //   startBlock: 20975761,
-        //   endBlock: 21611852,
-        // },
+        astar: {
+          address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
+          startBlock: 7291207,
+          endBlock: 7873955,
+        },
+        mainnet: {
+          address: '0x3BaC111A6F5ED6A554616373d5c7D858d7c10d88',
+          startBlock: 20975761,
+          endBlock: 21611852,
+        },
       },
     },
     Staking: {
       network: {
-        // mainnet: {
-        //   address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
-        //   startBlock: 20623833,
-        //   endBlock: 21611852,
-        // },
+        mainnet: {
+          address: '0xe9B85D6A1727d4B22595bab40018bf9B7407c677',
+          startBlock: 20623833,
+          endBlock: 21611852,
+        },
       },
       abi: StakingAbi,
     },
@@ -109,6 +110,24 @@ export default createConfig({
         soneium: {
           address: '0x1ccAA0C6448CCd836A09f62B1C0b2Df76f910424',
           startBlock: 1849376,
+        },
+      },
+    },
+
+    // autopilot-erc4626 vaults
+    AutopilotVault: {
+      abi: erc4626Abi,
+      network: {
+        soneium: {
+          address: [
+            '0x3BaC111A6F5ED6A554616373d5c7D858d7c10d88', // ASTR
+            '0x467b43ede72543FC0FD79c7085435A484a87e0D7', // nrETH
+            '0x74dFFE1e68f41ec364517f1F2951047246c5DD4e', // nsASTR
+            '0x2C7f58d2AfaCae1199c7e1E00FB629CCCEA5Bbd5', // USDC
+            '0x6A31048E5123859cf50F865d5a3050c18E77fFAe', // USDT
+            '0xefb3Cc73a5517c9825aE260468259476e7965c5E', // WETH
+          ],
+          startBlock: 1841580,
         },
       },
     },

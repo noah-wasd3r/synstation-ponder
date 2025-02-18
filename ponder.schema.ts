@@ -329,3 +329,52 @@ export const UserConditionPositionRelation = relations(userConditionPosition, ({
     references: [Condition.address],
   }),
 }));
+
+// autopilot vault
+
+export const AutopilotVault = onchainTable('autopilot_vault', (t) => ({
+  id: t.text().primaryKey(), // vaultAddress-user
+  user: t.hex().notNull(),
+  vaultAddress: t.hex().notNull(),
+  balance: t.bigint().notNull(),
+  lastUpdatedTimestamp: t.bigint().notNull(),
+}));
+export const AutopilotVaultDepositEvent = onchainTable('autopilot_vault_deposit_event', (t) => ({
+  id: t.text().primaryKey(),
+  vaultAddress: t.hex().notNull(),
+  sender: t.hex().notNull(),
+  receiver: t.hex().notNull(),
+  assets: t.bigint().notNull(),
+  shares: t.bigint().notNull(),
+  timestamp: t.bigint().notNull(),
+}));
+
+export const AutopilotVaultWithdrawEvent = onchainTable('autopilot_vault_withdraw_event', (t) => ({
+  id: t.text().primaryKey(),
+  vaultAddress: t.hex().notNull(),
+  sender: t.hex().notNull(),
+  receiver: t.hex().notNull(),
+  owner: t.hex().notNull(),
+  assets: t.bigint().notNull(),
+  shares: t.bigint().notNull(),
+  timestamp: t.bigint().notNull(),
+}));
+
+export const AutopilotVaultRelation = relations(AutopilotVault, ({ many }) => ({
+  depositEvents: many(AutopilotVaultDepositEvent),
+  withdrawEvents: many(AutopilotVaultWithdrawEvent),
+}));
+
+export const AutopilotVaultDepositEventRelation = relations(AutopilotVaultDepositEvent, ({ one }) => ({
+  vault: one(AutopilotVault, {
+    fields: [AutopilotVaultDepositEvent.vaultAddress],
+    references: [AutopilotVault.vaultAddress],
+  }),
+}));
+
+export const AutopilotVaultWithdrawEventRelation = relations(AutopilotVaultWithdrawEvent, ({ one }) => ({
+  vault: one(AutopilotVault, {
+    fields: [AutopilotVaultWithdrawEvent.vaultAddress],
+    references: [AutopilotVault.vaultAddress],
+  }),
+}));

@@ -2,7 +2,18 @@ import { ponder } from 'ponder:registry';
 import { Condition, conditionRedeemEvent, Market, UserPreStaking } from '../../ponder.schema';
 import { and, desc, eq, graphql, gte, inArray, index, lte, or, replaceBigInts, sql, union } from 'ponder';
 import { checksumAddress, numberToHex } from 'viem';
-import { account, OutcomeSwapEvent, pool, poolPrice, position, userConditionPosition, Users } from 'ponder:schema';
+import {
+  account,
+  AutopilotVault,
+  AutopilotVaultDepositEvent,
+  AutopilotVaultWithdrawEvent,
+  OutcomeSwapEvent,
+  pool,
+  poolPrice,
+  position,
+  userConditionPosition,
+  Users,
+} from 'ponder:schema';
 
 ponder.use('/', graphql());
 
@@ -20,12 +31,17 @@ ponder.get('/test', async (c) => {
 });
 
 ponder.get('/swap-history', async (c) => {
-  const { fromTimestamp, toTimestamp } = c.req.query();
-  const data = await c.db
-    .select()
-    .from(OutcomeSwapEvent)
+  const { fromTimestamp, toTimestamp, user } = c.req.query();
+
+  const condition = and(
     // @ts-ignore
-    .where(and(gte(OutcomeSwapEvent.timestamp, fromTimestamp), lte(OutcomeSwapEvent.timestamp, toTimestamp)));
+    fromTimestamp ? gte(OutcomeSwapEvent.timestamp, fromTimestamp) : undefined,
+    // @ts-ignore
+    toTimestamp ? lte(OutcomeSwapEvent.timestamp, toTimestamp) : undefined,
+    // @ts-ignore
+    user ? eq(OutcomeSwapEvent.txSender, user.toLowerCase() as `0x${string}`) : undefined
+  );
+  const data = await c.db.select().from(OutcomeSwapEvent).where(condition);
   const result = replaceBigInts(data, (v) => Number(v));
   return c.json(result);
 });
@@ -305,6 +321,20 @@ ponder.get('/point', async (c) => {
   const response = replaceBigInts(result, (v) => Number(v));
 
   return c.json(response);
+});
+
+ponder.get('/autopilot-all-deposit-withdraw-events', async (c) => {
+  const depositData = await c.db.select().from(AutopilotVaultDepositEvent);
+  const withdrawData = await c.db.select().from(AutopilotVaultWithdrawEvent);
+
+  const data = {
+    depositEvents: depositData,
+    withdrawEvents: withdrawData,
+  };
+
+  const result = replaceBigInts(data, (v) => Number(v));
+
+  return c.json(result);
 });
 
 ponder.get('/galxe-astar-more-than-100-timestamp-1739923200', async (c) => {
