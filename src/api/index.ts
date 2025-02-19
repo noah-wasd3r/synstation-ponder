@@ -337,9 +337,9 @@ ponder.get('/autopilot-all-deposit-withdraw-events', async (c) => {
   return c.json(result);
 });
 
-ponder.get('/galxe-astar-more-than-100-timestamp-1739923200', async (c) => {
+ponder.get('/galxe-astar-more-than-100-timestamp-1739919600', async (c) => {
   const { address } = c.req.query();
-  const startTimestamp = 1739923200n; // 2/19/2025 00:00:00 UTC
+  const startTimestamp = 1739919600n; // Tue Feb 18 2025 23:00:00 GMT+0000
   // const startTimestamp = 1739417002n;
 
   const fromToken = '0x2cae934a1e84f693fbb78ca5ed3b0a6893259441'; // astar
