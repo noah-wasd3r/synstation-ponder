@@ -77,8 +77,10 @@ ponder.on('V3Pool:Initialize', async ({ event, context }) => {
 
   const prices = sqrtPriceX96ToTokenPrices(event.args.sqrtPriceX96);
 
-  const conditionPrice = GM[context.network.chainId] === loadedPool.token0 ? prices[0] : prices[1];
-
+  let conditionPrice = GM[context.network.chainId] === loadedPool.token0 ? prices[0] : prices[1];
+  if (conditionPrice && conditionPrice > 1000001n) {
+    conditionPrice = 1000000n;
+  }
   await context.db
     .update(pool, {
       id: event.log.address,
