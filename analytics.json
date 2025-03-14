@@ -1,0 +1,12 @@
+{
+  "marketData": {
+    "accumulatedVolume": 9356.736834999982,
+    "accumulatedWalletCount": 189,
+    "accumulatedTxCount": 1689
+  },
+  "autopilotData": {
+    "depositVolume": 11336.383744629275,
+    "txCount": 24,
+    "walletCount": 21
+  }
+}
