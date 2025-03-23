@@ -306,29 +306,6 @@ export const PoolPriceRelation = relations(poolPrice, ({ one }) => ({
 // for chart -end
 
 //
-export const userConditionPosition = onchainTable('user_condition_position', (t) => ({
-  id: t.text().primaryKey(), // user-condition
-  user: t.hex().notNull(),
-  condition: t.hex().notNull(),
-  createdAt: t.bigint().notNull(),
-  updatedAt: t.bigint().notNull(),
-  purchaseRate: t.bigint().notNull(),
-  accumulatedAmount: t.bigint().notNull(),
-  closedAt: t.bigint(),
-
-  marketIndex: t.text().notNull(),
-
-  buyInGm: t.bigint().notNull(),
-  sellInGm: t.bigint().notNull(),
-  redeemInGm: t.bigint().notNull(),
-}));
-
-export const UserConditionPositionRelation = relations(userConditionPosition, ({ one }) => ({
-  condition: one(Condition, {
-    fields: [userConditionPosition.condition],
-    references: [Condition.address],
-  }),
-}));
 
 // autopilot vault
 

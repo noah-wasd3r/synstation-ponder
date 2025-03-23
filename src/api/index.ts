@@ -11,7 +11,6 @@ import {
   pool,
   poolPrice,
   position,
-  userConditionPosition,
   Users,
 } from 'ponder:schema';
 
@@ -43,40 +42,6 @@ ponder.get('/swap-history', async (c) => {
   );
   const data = await c.db.select().from(OutcomeSwapEvent).where(condition);
   const result = replaceBigInts(data, (v) => Number(v));
-  return c.json(result);
-});
-
-ponder.get('/user-positions', async (c) => {
-  let { user, resolved } = c.req.query();
-
-  if (!user) {
-    return c.json({ error: 'user is required' }, 400);
-  }
-
-  user = user.toLowerCase() as `0x${string}`;
-
-  let data = await c.db.query.userConditionPosition.findMany({
-    // @ts-ignore
-    where: (userConditionPosition, { eq }) => eq(userConditionPosition.user, user),
-    with: {
-      condition: {
-        with: {
-          market: true,
-        },
-      },
-    },
-  });
-
-  if (resolved === 'true') {
-    data = data.filter((v) => v.condition.market.isResolved);
-  }
-
-  if (resolved === 'false') {
-    data = data.filter((v) => !v.condition.market.isResolved);
-  }
-
-  const result = replaceBigInts(data, (v) => Number(v));
-
   return c.json(result);
 });
 
