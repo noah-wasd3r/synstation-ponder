@@ -231,16 +231,23 @@ export const Market = onchainTable('market', (t) => ({
   disitributions: t.bigint().array(),
 }));
 
-export const OutcomeSwapEvent = onchainTable('outcome_swap_event', (t) => ({
-  id: t.text().primaryKey(),
-  timestamp: t.bigint().notNull(),
-  fromToken: t.hex().notNull(),
-  toToken: t.hex().notNull(),
-  txSender: t.hex().notNull(),
-  amountIn: t.bigint().notNull(),
-  amountInGm: t.bigint().notNull(),
-  amountOut: t.bigint().notNull(),
-}));
+export const OutcomeSwapEvent = onchainTable(
+  'outcome_swap_event',
+  (t) => ({
+    id: t.text().primaryKey(),
+    timestamp: t.bigint().notNull(),
+    fromToken: t.hex().notNull(),
+    toToken: t.hex().notNull(),
+    txSender: t.hex().notNull(),
+    amountIn: t.bigint().notNull(),
+    amountInGm: t.bigint().notNull(),
+    amountOut: t.bigint().notNull(),
+  }),
+  (table) => ({
+    timestampIdx: index('outcome_swap_event_timestamp_idx').on(table.timestamp),
+    txSenderIdx: index('outcome_swap_event_tx_sender_idx').on(table.txSender),
+  })
+);
 
 export const Condition = onchainTable(
   'condition',
@@ -289,12 +296,38 @@ export const RedeemEventRelation = relations(conditionRedeemEvent, ({ one }) => 
 
 // for chart
 
-export const poolPrice = onchainTable('pool_price', (t) => ({
-  id: t.text().primaryKey(), // poolAddress-timestamp
-  pool: t.hex().notNull(), // reference pool
-  price: t.bigint().notNull(),
-  timestamp: t.bigint().notNull(),
-}));
+export const poolPrice = onchainTable(
+  'pool_price',
+  (t) => ({
+    id: t.text().primaryKey(), // poolAddress-timestamp
+    pool: t.hex().notNull(), // reference pool
+    price: t.bigint().notNull(),
+    timestamp: t.bigint().notNull(),
+  }),
+  (table) => ({
+    timestampIdx: index('pool_price_timestamp_idx').on(table.timestamp),
+    poolIdx: index('pool_price_pool_idx').on(table.pool),
+  })
+);
+
+export const hourBuckets = onchainTable(
+  'hour_buckets',
+  (t) => ({
+    id: t.text().primaryKey(), // poolAddress-timeId
+    pool: t.hex().notNull(), // reference pool
+    timeId: t.integer().primaryKey(),
+    open: t.real().notNull(),
+    close: t.real().notNull(),
+    low: t.real().notNull(),
+    high: t.real().notNull(),
+    average: t.real().notNull(),
+    count: t.integer().notNull(),
+  }),
+  (table) => ({
+    poolIdx: index('hour_buckets_pool_idx').on(table.pool),
+    timeIdIdx: index('hour_buckets_time_id_idx').on(table.timeId),
+  })
+);
 
 export const PoolPriceRelation = relations(poolPrice, ({ one }) => ({
   pool: one(pool, {
@@ -303,6 +336,12 @@ export const PoolPriceRelation = relations(poolPrice, ({ one }) => ({
   }),
 }));
 
+export const HourBucketsRelation = relations(hourBuckets, ({ one }) => ({
+  pool: one(pool, {
+    fields: [hourBuckets.pool],
+    references: [pool.id],
+  }),
+}));
 // for chart -end
 
 //

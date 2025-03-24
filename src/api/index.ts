@@ -231,6 +231,7 @@ ponder.get('/chart/price', async (c) => {
         // @ts-ignore
         and(gte(poolPrice.timestamp, startTimestampInNumber), lte(poolPrice.timestamp, endTimestampInNumber))
       ),
+    limit: 1000,
   });
 
   // const timestampedData = data.filter((d) => Number(d.timestamp) >= startTimestampInNumber && Number(d.timestamp) <= endTimestampInNumber);

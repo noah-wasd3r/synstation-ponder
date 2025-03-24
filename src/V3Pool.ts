@@ -1,4 +1,4 @@
-import { factory, pool, Condition, poolPrice } from 'ponder:schema';
+import { factory, pool, Condition, poolPrice, hourBuckets } from 'ponder:schema';
 
 import { ponder } from 'ponder:registry';
 import { sqrtPriceX96ToTokenPrices } from './utils/pricing';
@@ -155,16 +155,38 @@ ponder.on('V3Pool:Swap', async ({ event, context }) => {
     }));
 
   // for chart
+  // await context.db
+  //   .insert(poolPrice)
+  //   .values({
+  //     id: event.log.address + '-' + event.block.timestamp.toString(),
+  //     pool: event.log.address,
+  //     price: conditionPrice ?? 0n,
+  //     timestamp: event.block.timestamp,
+  //   })
+  //   .onConflictDoUpdate(() => ({
+  //     price: conditionPrice ?? 0n,
+  //   }));
+  const hourId = Math.floor(Number(event.block.timestamp) / 3600) * 3600;
+
   await context.db
-    .insert(poolPrice)
+    .insert(hourBuckets)
     .values({
-      id: event.log.address + '-' + event.block.timestamp.toString(),
+      id: event.log.address + '-' + hourId.toString(),
       pool: event.log.address,
-      price: conditionPrice ?? 0n,
-      timestamp: event.block.timestamp,
+      timeId: hourId,
+      open: Number(conditionPrice ?? 0n),
+      close: Number(conditionPrice ?? 0n),
+      low: Number(conditionPrice ?? 0n),
+      high: Number(conditionPrice ?? 0n),
+      average: Number(conditionPrice ?? 0n),
+      count: 1,
     })
-    .onConflictDoUpdate(() => ({
-      price: conditionPrice ?? 0n,
+    .onConflictDoUpdate((row) => ({
+      close: Number(conditionPrice ?? 0n),
+      low: Math.min(row.low, Number(conditionPrice ?? 0n)),
+      high: Math.max(row.high, Number(conditionPrice ?? 0n)),
+      average: (row.average * row.count + Number(conditionPrice ?? 0n)) / (row.count + 1),
+      count: row.count + 1,
     }));
 });
 
