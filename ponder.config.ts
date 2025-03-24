@@ -13,6 +13,10 @@ import { NonfungiblePositionManagerAbi } from './abis/NonfungiblePositionManager
 import { PancakeV3PoolAbi } from './abis/PancakeV3PoolAbi';
 import { erc4626Abi } from './abis/ERC4626Abi';
 export default createConfig({
+  database: {
+    kind: 'postgres',
+    connectionString: 'postgresql://postgres:password@localhost:5432/ponder',
+  },
   networks: {
     mainnet: {
       chainId: 1,
