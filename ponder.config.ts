@@ -32,8 +32,8 @@ export default createConfig({
       chainId: 1868,
       transport: loadBalance([
         http(process.env.PONDER_RPC_URL_1868),
-        http('https://soneium.rpc.scs.startale.com?apikey=LYCPyc2hMBN8ZgCFYqGj6YyJ6VvePE4b'),
-        http('https://soneium.rpc.scs.startale.com?apikey=poiRCWPmsK0kh3pi9SeqIJqy4CsABUJ4'),
+        // http('https://soneium.rpc.scs.startale.com?apikey=LYCPyc2hMBN8ZgCFYqGj6YyJ6VvePE4b'),
+        // http('https://soneium.rpc.scs.startale.com?apikey=poiRCWPmsK0kh3pi9SeqIJqy4CsABUJ4'),
       ]),
     },
   },
