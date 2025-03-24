@@ -226,6 +226,7 @@ ponder.get('/chart/price', async (c) => {
           ),
         limit: 100,
       });
+      break;
     case '6h':
       data = await c.db.query.fiveMinuteBuckets.findMany({
         where: (fiveMinuteBuckets, { inArray, and, gte, lte }) =>
@@ -235,6 +236,7 @@ ponder.get('/chart/price', async (c) => {
           ),
         limit: 100,
       });
+      break;
     case '1d':
       data = await c.db.query.fifteenMinuteBuckets.findMany({
         where: (fifteenMinuteBuckets, { inArray, and, gte, lte }) =>
@@ -244,6 +246,7 @@ ponder.get('/chart/price', async (c) => {
           ),
         limit: 100,
       });
+      break;
     case '1w':
       data = await c.db.query.hourBuckets.findMany({
         where: (hourBuckets, { inArray, and, gte, lte }) =>
@@ -253,6 +256,7 @@ ponder.get('/chart/price', async (c) => {
           ),
         limit: 100,
       });
+      break;
     case '1m':
       data = await c.db.query.fourHourBuckets.findMany({
         where: (fourHourBuckets, { inArray, and, gte, lte }) =>
@@ -262,6 +266,7 @@ ponder.get('/chart/price', async (c) => {
           ),
         limit: 100,
       });
+      break;
     case 'all':
       data = await c.db.query.dayBuckets.findMany({
         where: (dayBuckets, { inArray, and, gte, lte }) =>

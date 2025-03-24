@@ -70,6 +70,7 @@ export default createConfig({
         soneium: {
           address: '0x81B4029bfCb5302317fe5d35D54544EA3328e30f',
           startBlock: 1812231,
+          // endBlock: 3063843,
         },
       },
     },
@@ -79,6 +80,7 @@ export default createConfig({
         soneium: {
           address: '0xc9b9DDEe50EA1842A36e4AA02d50211586b6eE63',
           startBlock: 1812678,
+          // endBlock: 3063843,
         },
       },
     },
@@ -96,6 +98,7 @@ export default createConfig({
         parameter: 'pool',
       }),
       startBlock: 1812231,
+      // endBlock: 3063843,
     },
     OutcomeFactory: {
       abi: OutcomeFactoryImplAbi,
@@ -104,6 +107,7 @@ export default createConfig({
           address: '0xa546b3a3C71aD7ED2152551490049f85FE136B34',
 
           startBlock: 1812496,
+          // endBlock: 3063843,
         },
       },
     },
@@ -114,6 +118,7 @@ export default createConfig({
         soneium: {
           address: '0x1ccAA0C6448CCd836A09f62B1C0b2Df76f910424',
           startBlock: 1849376,
+          // endBlock: 3063843,
         },
       },
     },
@@ -132,6 +137,7 @@ export default createConfig({
             '0xefb3Cc73a5517c9825aE260468259476e7965c5E', // WETH
           ],
           startBlock: 1841580,
+          // endBlock: 3063843,
         },
       },
     },
