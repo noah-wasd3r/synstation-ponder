@@ -310,12 +310,68 @@ export const poolPrice = onchainTable(
   })
 );
 
+export const oneMinuteBuckets = onchainTable(
+  'one_minute_buckets',
+  (t) => ({
+    id: t.text().primaryKey(), // poolAddress-timeId
+    pool: t.hex().notNull(), // reference pool
+    timeId: t.integer().notNull(),
+    open: t.real().notNull(),
+    close: t.real().notNull(),
+    low: t.real().notNull(),
+    high: t.real().notNull(),
+    average: t.real().notNull(),
+    count: t.integer().notNull(),
+  }),
+  (table) => ({
+    poolIdx: index('one_minute_buckets_pool_idx').on(table.pool),
+    timeIdIdx: index('one_minute_buckets_time_id_idx').on(table.timeId),
+  })
+);
+
+export const fiveMinuteBuckets = onchainTable(
+  'five_minute_buckets',
+  (t) => ({
+    id: t.text().primaryKey(), // poolAddress-timeId
+    pool: t.hex().notNull(), // reference pool
+    timeId: t.integer().notNull(),
+    open: t.real().notNull(),
+    close: t.real().notNull(),
+    low: t.real().notNull(),
+    high: t.real().notNull(),
+    average: t.real().notNull(),
+    count: t.integer().notNull(),
+  }),
+  (table) => ({
+    poolIdx: index('five_minute_buckets_pool_idx').on(table.pool),
+    timeIdIdx: index('five_minute_buckets_time_id_idx').on(table.timeId),
+  })
+);
+export const fifteenMinuteBuckets = onchainTable(
+  'fifteen_minute_buckets',
+  (t) => ({
+    id: t.text().primaryKey(), // poolAddress-timeId
+    pool: t.hex().notNull(), // reference pool
+    timeId: t.integer().notNull(),
+    open: t.real().notNull(),
+    close: t.real().notNull(),
+    low: t.real().notNull(),
+    high: t.real().notNull(),
+    average: t.real().notNull(),
+    count: t.integer().notNull(),
+  }),
+  (table) => ({
+    poolIdx: index('fifteen_minute_buckets_pool_idx').on(table.pool),
+    timeIdIdx: index('fifteen_minute_buckets_time_id_idx').on(table.timeId),
+  })
+);
+
 export const hourBuckets = onchainTable(
   'hour_buckets',
   (t) => ({
     id: t.text().primaryKey(), // poolAddress-timeId
     pool: t.hex().notNull(), // reference pool
-    timeId: t.integer().primaryKey(),
+    timeId: t.integer().notNull(),
     open: t.real().notNull(),
     close: t.real().notNull(),
     low: t.real().notNull(),
@@ -326,6 +382,43 @@ export const hourBuckets = onchainTable(
   (table) => ({
     poolIdx: index('hour_buckets_pool_idx').on(table.pool),
     timeIdIdx: index('hour_buckets_time_id_idx').on(table.timeId),
+  })
+);
+export const fourHourBuckets = onchainTable(
+  'four_hour_buckets',
+  (t) => ({
+    id: t.text().primaryKey(), // poolAddress-timeId
+    pool: t.hex().notNull(), // reference pool
+    timeId: t.integer().notNull(),
+    open: t.real().notNull(),
+    close: t.real().notNull(),
+    low: t.real().notNull(),
+    high: t.real().notNull(),
+    average: t.real().notNull(),
+    count: t.integer().notNull(),
+  }),
+  (table) => ({
+    poolIdx: index('four_hour_buckets_pool_idx').on(table.pool),
+    timeIdIdx: index('four_hour_buckets_time_id_idx').on(table.timeId),
+  })
+);
+
+export const dayBuckets = onchainTable(
+  'day_buckets',
+  (t) => ({
+    id: t.text().primaryKey(), // poolAddress-timeId
+    pool: t.hex().notNull(), // reference pool
+    timeId: t.integer().notNull(),
+    open: t.real().notNull(),
+    close: t.real().notNull(),
+    low: t.real().notNull(),
+    high: t.real().notNull(),
+    average: t.real().notNull(),
+    count: t.integer().notNull(),
+  }),
+  (table) => ({
+    poolIdx: index('day_buckets_pool_idx').on(table.pool),
+    timeIdIdx: index('day_buckets_time_id_idx').on(table.timeId),
   })
 );
 

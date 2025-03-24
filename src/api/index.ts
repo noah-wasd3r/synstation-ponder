@@ -210,29 +210,69 @@ ponder.get('/markets', async (c) => {
 });
 
 ponder.get('/chart/price', async (c) => {
-  const { poolAddresses, startTimestamp, endTimestamp } = c.req.query();
-  let endTimestampInNumber = Number(endTimestamp);
-  if (!endTimestampInNumber) {
-    endTimestampInNumber = Date.now() / 1000;
-  }
-
-  let startTimestampInNumber = Number(startTimestamp);
-  if (!startTimestampInNumber) {
-    startTimestampInNumber = 0;
-  }
-
+  const { poolAddresses, timeRange } = c.req.query();
+  // timeRange: 1h, 6h, 1d, 1w , 1m , all
+  // buckets: 1m, 5m, 15m, 1h, 4h, 1d
   const poolAddressesArr = poolAddresses?.split(',') ?? [];
 
-  const data = await c.db.query.poolPrice.findMany({
-    where: (poolPrice, { inArray, and, gte, lte }) =>
-      and(
-        // @ts-ignore
-        inArray(poolPrice.pool, poolAddressesArr),
-        // @ts-ignore
-        and(gte(poolPrice.timestamp, startTimestampInNumber), lte(poolPrice.timestamp, endTimestampInNumber))
-      ),
-    limit: 1000,
-  });
+  let data: any[] = [];
+  switch (timeRange) {
+    case '1h':
+      data = await c.db.query.oneMinuteBuckets.findMany({
+        where: (oneMinuteBuckets, { inArray, and, gte, lte }) =>
+          and(
+            // @ts-ignore
+            inArray(oneMinuteBuckets.pool, poolAddressesArr)
+          ),
+        limit: 100,
+      });
+    case '6h':
+      data = await c.db.query.fiveMinuteBuckets.findMany({
+        where: (fiveMinuteBuckets, { inArray, and, gte, lte }) =>
+          and(
+            // @ts-ignore
+            inArray(fiveMinuteBuckets.pool, poolAddressesArr)
+          ),
+        limit: 100,
+      });
+    case '1d':
+      data = await c.db.query.fifteenMinuteBuckets.findMany({
+        where: (fifteenMinuteBuckets, { inArray, and, gte, lte }) =>
+          and(
+            // @ts-ignore
+            inArray(fifteenMinuteBuckets.pool, poolAddressesArr)
+          ),
+        limit: 100,
+      });
+    case '1w':
+      data = await c.db.query.hourBuckets.findMany({
+        where: (hourBuckets, { inArray, and, gte, lte }) =>
+          and(
+            // @ts-ignore
+            inArray(hourBuckets.pool, poolAddressesArr)
+          ),
+        limit: 100,
+      });
+    case '1m':
+      data = await c.db.query.fourHourBuckets.findMany({
+        where: (fourHourBuckets, { inArray, and, gte, lte }) =>
+          and(
+            // @ts-ignore
+            inArray(fourHourBuckets.pool, poolAddressesArr)
+          ),
+        limit: 100,
+      });
+    case 'all':
+      data = await c.db.query.dayBuckets.findMany({
+        where: (dayBuckets, { inArray, and, gte, lte }) =>
+          and(
+            // @ts-ignore
+            inArray(dayBuckets.pool, poolAddressesArr)
+          ),
+        limit: 100,
+      });
+      break;
+  }
 
   // const timestampedData = data.filter((d) => Number(d.timestamp) >= startTimestampInNumber && Number(d.timestamp) <= endTimestampInNumber);
   const dataObject: { [key: string]: any[] } = {};
@@ -291,6 +331,11 @@ ponder.get('/point', async (c) => {
 
 ponder.get('/autopilot-all-deposit-withdraw-events', async (c) => {
   const depositData = await c.db.select().from(AutopilotVaultDepositEvent);
+
+  await c.db.query.Market.findMany({
+    limit: Number(pageSize),
+    offset: (Number(page) - 1) * Number(pageSize),
+  });
   const withdrawData = await c.db.select().from(AutopilotVaultWithdrawEvent);
 
   const data = {
@@ -322,7 +367,8 @@ ponder.get('/galxe-astar-more-than-100-timestamp-1739923200', async (c) => {
         eq(OutcomeSwapEvent.txSender, address.toLowerCase() as `0x${string}`),
         eq(OutcomeSwapEvent.fromToken, fromToken)
       )
-    );
+    )
+    .limit(100);
 
   const totalAmountFromToken = data.reduce((acc, curr) => acc + Number(curr.amountIn), 0);
 
@@ -349,7 +395,8 @@ ponder.get('/galxe-astar-more-than-100-timestamp-1739919600', async (c) => {
         eq(OutcomeSwapEvent.txSender, address.toLowerCase() as `0x${string}`),
         eq(OutcomeSwapEvent.fromToken, fromToken)
       )
-    );
+    )
+    .limit(100);
 
   const totalAmountFromToken = data.reduce((acc, curr) => acc + Number(curr.amountIn), 0);
 
@@ -376,7 +423,8 @@ ponder.get('/galxe-usdc-more-than-10-timestamp-1739750400', async (c) => {
         eq(OutcomeSwapEvent.txSender, address.toLowerCase() as `0x${string}`),
         eq(OutcomeSwapEvent.fromToken, fromToken)
       )
-    );
+    )
+    .limit(100);
 
   const totalAmountFromToken = data.reduce((acc, curr) => acc + Number(curr.amountIn), 0);
 

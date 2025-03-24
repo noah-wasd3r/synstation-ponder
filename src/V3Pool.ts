@@ -1,10 +1,12 @@
-import { factory, pool, Condition, poolPrice, hourBuckets } from 'ponder:schema';
+import { factory, pool, Condition, poolPrice, hourBuckets, fourHourBuckets, dayBuckets } from 'ponder:schema';
 
 import { ponder } from 'ponder:registry';
 import { sqrtPriceX96ToTokenPrices } from './utils/pricing';
 import { GM } from './constants/addresses';
 import { zeroAddress } from 'viem';
-
+import { oneMinuteBuckets } from 'ponder:schema';
+import { fiveMinuteBuckets } from 'ponder:schema';
+import { fifteenMinuteBuckets } from 'ponder:schema';
 ponder.on('V3Factory:PoolCreated', async ({ event, context }) => {
   const loadedFactory = await context.db.find(factory, {
     id: 'factory',
@@ -166,14 +168,120 @@ ponder.on('V3Pool:Swap', async ({ event, context }) => {
   //   .onConflictDoUpdate(() => ({
   //     price: conditionPrice ?? 0n,
   //   }));
+  const oneMinuteId = Math.floor(Number(event.block.timestamp) / 60) * 60;
+  const fiveMinuteId = Math.floor(Number(event.block.timestamp) / 300) * 300;
+  const fifteenMinuteId = Math.floor(Number(event.block.timestamp) / 900) * 900;
   const hourId = Math.floor(Number(event.block.timestamp) / 3600) * 3600;
+  const fourHourId = Math.floor(Number(event.block.timestamp) / 14400) * 14400;
+  const dayId = Math.floor(Number(event.block.timestamp) / 86400) * 86400;
 
+  await context.db
+    .insert(oneMinuteBuckets)
+    .values({
+      id: event.log.address + '-' + oneMinuteId.toString(),
+      pool: event.log.address,
+      timeId: oneMinuteId,
+      open: Number(conditionPrice ?? 0n),
+      close: Number(conditionPrice ?? 0n),
+      low: Number(conditionPrice ?? 0n),
+      high: Number(conditionPrice ?? 0n),
+      average: Number(conditionPrice ?? 0n),
+      count: 1,
+    })
+    .onConflictDoUpdate((row) => ({
+      close: Number(conditionPrice ?? 0n),
+      low: Math.min(row.low, Number(conditionPrice ?? 0n)),
+      high: Math.max(row.high, Number(conditionPrice ?? 0n)),
+      average: (row.average * row.count + Number(conditionPrice ?? 0n)) / (row.count + 1),
+      count: row.count + 1,
+    }));
+  await context.db
+    .insert(fiveMinuteBuckets)
+    .values({
+      id: event.log.address + '-' + fiveMinuteId.toString(),
+      pool: event.log.address,
+      timeId: fiveMinuteId,
+      open: Number(conditionPrice ?? 0n),
+      close: Number(conditionPrice ?? 0n),
+      low: Number(conditionPrice ?? 0n),
+      high: Number(conditionPrice ?? 0n),
+      average: Number(conditionPrice ?? 0n),
+      count: 1,
+    })
+    .onConflictDoUpdate((row) => ({
+      close: Number(conditionPrice ?? 0n),
+      low: Math.min(row.low, Number(conditionPrice ?? 0n)),
+      high: Math.max(row.high, Number(conditionPrice ?? 0n)),
+      average: (row.average * row.count + Number(conditionPrice ?? 0n)) / (row.count + 1),
+      count: row.count + 1,
+    }));
+  await context.db
+    .insert(fifteenMinuteBuckets)
+    .values({
+      id: event.log.address + '-' + fifteenMinuteId.toString(),
+      pool: event.log.address,
+      timeId: fifteenMinuteId,
+      open: Number(conditionPrice ?? 0n),
+      close: Number(conditionPrice ?? 0n),
+      low: Number(conditionPrice ?? 0n),
+      high: Number(conditionPrice ?? 0n),
+      average: Number(conditionPrice ?? 0n),
+      count: 1,
+    })
+    .onConflictDoUpdate((row) => ({
+      close: Number(conditionPrice ?? 0n),
+      low: Math.min(row.low, Number(conditionPrice ?? 0n)),
+      high: Math.max(row.high, Number(conditionPrice ?? 0n)),
+      average: (row.average * row.count + Number(conditionPrice ?? 0n)) / (row.count + 1),
+      count: row.count + 1,
+    }));
   await context.db
     .insert(hourBuckets)
     .values({
       id: event.log.address + '-' + hourId.toString(),
       pool: event.log.address,
       timeId: hourId,
+      open: Number(conditionPrice ?? 0n),
+      close: Number(conditionPrice ?? 0n),
+      low: Number(conditionPrice ?? 0n),
+      high: Number(conditionPrice ?? 0n),
+      average: Number(conditionPrice ?? 0n),
+      count: 1,
+    })
+    .onConflictDoUpdate((row) => ({
+      close: Number(conditionPrice ?? 0n),
+      low: Math.min(row.low, Number(conditionPrice ?? 0n)),
+      high: Math.max(row.high, Number(conditionPrice ?? 0n)),
+      average: (row.average * row.count + Number(conditionPrice ?? 0n)) / (row.count + 1),
+      count: row.count + 1,
+    }));
+
+  await context.db
+    .insert(fourHourBuckets)
+    .values({
+      id: event.log.address + '-' + fourHourId.toString(),
+      pool: event.log.address,
+      timeId: fourHourId,
+      open: Number(conditionPrice ?? 0n),
+      close: Number(conditionPrice ?? 0n),
+      low: Number(conditionPrice ?? 0n),
+      high: Number(conditionPrice ?? 0n),
+      average: Number(conditionPrice ?? 0n),
+      count: 1,
+    })
+    .onConflictDoUpdate((row) => ({
+      close: Number(conditionPrice ?? 0n),
+      low: Math.min(row.low, Number(conditionPrice ?? 0n)),
+      high: Math.max(row.high, Number(conditionPrice ?? 0n)),
+      average: (row.average * row.count + Number(conditionPrice ?? 0n)) / (row.count + 1),
+      count: row.count + 1,
+    }));
+  await context.db
+    .insert(dayBuckets)
+    .values({
+      id: event.log.address + '-' + dayId.toString(),
+      pool: event.log.address,
+      timeId: dayId,
       open: Number(conditionPrice ?? 0n),
       close: Number(conditionPrice ?? 0n),
       low: Number(conditionPrice ?? 0n),
